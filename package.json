@@ -1,0 +1,15 @@
+{
+  "name": "cab-booking-system-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vanilla Node.js and MySQL backend for Online Cab Booking System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.14.0",
+    "dotenv": "^16.4.7"
+  }
+}
