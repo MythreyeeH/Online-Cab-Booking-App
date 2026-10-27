@@ -1,0 +1,109 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #1f2937;
+}
+
+header {
+  background: #111827;
+  color: white;
+  padding: 20px 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0;
+}
+
+main {
+  max-width: 1000px;
+  margin: 35px auto;
+  padding: 0 20px;
+}
+
+.welcome {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px #0000000a;
+}
+
+.welcome h2 {
+  margin-top: 0;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: bold;
+  background: #166534;
+  color: white;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+}
+
+.card p {
+  color: #6b7280;
+}
+
+.card h2 {
+  font-size: 30px;
+  margin-bottom: 0;
+}
+
+.ride-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px #0000000a;
+}
+
+.ride-card p {
+  line-height: 1.6;
+}
+
+.ride-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.reject {
+  background: #dc2626;
+}
+
+@media (max-width: 600px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  main {
+    margin-top: 20px;
+  }
+}

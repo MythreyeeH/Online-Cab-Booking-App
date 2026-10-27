@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>CabConnect</h1>
+    <span>Driver Portal</span>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <div>
+        <h2>Welcome, Driver!</h2>
+        <p>Manage your rides in one place.</p>
+      </div>
+
+      <button id="availabilityBtn">Go Offline</button>
+    </section>
+
+    <section class="stats">
+      <article class="card">
+        <p>Today's Trips</p>
+        <h2 id="tripCount">0</h2>
+      </article>
+
+      <article class="card">
+        <p>Today's Earnings</p>
+        <h2 id="earnings">₹0</h2>
+      </article>
+    </section>
+
+    <section>
+      <h2>New Ride Requests</h2>
+      <div id="requests"></div>
+    </section>
+
+    <section>
+      <h2>My Trips</h2>
+      <div id="myTrips">
+        <p>No trips accepted yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
