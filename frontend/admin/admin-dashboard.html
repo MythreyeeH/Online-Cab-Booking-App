@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | Cab Booking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">C</span><div><strong>CabFlow</strong><small>ADMIN CONSOLE</small></div></div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav id="adminNav" aria-label="Admin features"></nav>
+    <div class="sidebar-bottom"><span class="avatar">AD</span><div><strong>Admin Demo</strong><small>Administrator</small></div><span class="online-dot" title="Demo status"></span></div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar"><div><p class="eyebrow">OVERVIEW</p><h1>Admin dashboard</h1><p class="subheading">Monitor bookings, drivers and daily operations.</p></div><div class="top-actions"><span class="live-pill"><i></i> System overview</span><button id="refreshBtn" class="secondary-btn" type="button">↻ Refresh data</button></div></header>
+    <section class="stats-grid" aria-label="Summary statistics">
+      <article class="stat-card"><div class="stat-icon purple">♙</div><p>Total passengers</p><strong id="passengerCount">—</strong><small>Registered passenger accounts</small></article>
+      <article class="stat-card"><div class="stat-icon green">✓</div><p>Approved drivers</p><strong id="driverCount">—</strong><small>Verified driver profiles</small></article>
+      <article class="stat-card"><div class="stat-icon orange">↗</div><p>Active bookings</p><strong id="activeCount">—</strong><small>Assigned or in-progress trips</small></article>
+      <article class="stat-card"><div class="stat-icon blue">₹</div><p>Collected revenue</p><strong id="revenueCount">—</strong><small>Payments marked as paid</small></article>
+    </section>
+    <section class="panel map-panel"><div class="panel-heading"><div><h2>Live ride map</h2><p>Driver markers for active bookings</p></div><span class="map-legend"><i></i> Active booking</span></div><div id="rideMap" aria-label="Map of active booking demo markers"></div><p class="map-note">Demo locations in Chennai. The current database schema does not store GPS coordinates.</p></section>
+    <section class="panel bookings-panel"><div class="panel-heading booking-heading"><div><h2>Current bookings</h2><p>Bookings fetched from your MySQL database</p></div><span id="bookingCountLabel" class="count-badge">Loading…</span></div>
+      <div class="table-tools"><label class="search-box"><span>⌕</span><input id="bookingSearch" type="search" placeholder="Search passenger, driver, pickup or destination…" aria-label="Search bookings"></label><select id="statusFilter" aria-label="Filter by booking status"><option value="ALL">All statuses</option><option value="IN_PROGRESS">In progress</option><option value="ASSIGNED">Assigned</option><option value="COMPLETED">Completed</option><option value="CANCELLED">Cancelled</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>TRIP ID</th><th>PASSENGER</th><th>DRIVER / VEHICLE</th><th>ROUTE</th><th>FARE</th><th>STATUS</th></tr></thead><tbody id="bookingRows"><tr><td colspan="6" class="empty-state">Loading bookings…</td></tr></tbody></table></div>
+      <div id="tableFooter" class="table-footer">Loading records…</div>
+    </section>
+    <footer>CabFlow Admin · Web Technology project · Data from MySQL REST APIs</footer>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/admin/admin.js"></script>
+</body></html>
