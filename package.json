@@ -11,5 +11,16 @@
   "dependencies": {
     "mysql2": "^3.14.0",
     "dotenv": "^16.4.7"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MythreyeeH/Online-Cab-Booking-App.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MythreyeeH/Online-Cab-Booking-App/issues"
+  },
+  "homepage": "https://github.com/MythreyeeH/Online-Cab-Booking-App#readme"
 }

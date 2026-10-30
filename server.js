@@ -95,6 +95,7 @@ function serveStatic(pathname, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+<<<<<<< HEAD
     if (req.method === 'OPTIONS') {
         res.writeHead(204, {
             'Access-Control-Allow-Origin': '*',
@@ -278,6 +279,26 @@ if (areaMatch && req.method === 'DELETE') {
                     : error.message || 'Server/database error.'
         });
     }
+=======
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, { 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Methods':'GET,OPTIONS', 'Access-Control-Allow-Headers':'Content-Type' });
+    return res.end();
+  }
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  try {
+    if (req.method === 'GET' && url.pathname === '/api/admin/summary') return sendJson(res, 200, await admin.getSummary());
+    if (req.method === 'GET' && url.pathname === '/api/admin/bookings') return sendJson(res, 200, await admin.getBookings());
+    if (req.method === 'GET' && url.pathname === '/api/admin/drivers')
+    return sendJson(res, 200, await admin.getDrivers());
+    if (req.method === 'GET' && url.pathname === '/api/admin/passengers')
+    return sendJson(res, 200, await admin.getPassengers());
+    if (url.pathname.startsWith('/api/')) return sendJson(res, 404, { error: 'API endpoint not found' });
+    return serveStatic(url.pathname, res);
+  } catch (error) {
+    console.error(error);
+    return sendJson(res, 500, { error: 'Server/database error. Check backend configuration and MySQL connection.' });
+  }
+>>>>>>> dffb997204aca0c12cfb51a635ba9fd8e9c361dd
 });
 
 server.listen(PORT, () => {

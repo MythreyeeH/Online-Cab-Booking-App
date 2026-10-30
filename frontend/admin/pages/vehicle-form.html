@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Form</title>
+    <link rel="stylesheet" href="../record-form.css">
+</head>
+<body data-form="vehicle">
+    <main class="form-page">
+        <h1 id="formTitle">Vehicle Form</h1>
+        <p class="form-description" id="formDescription"></p>
+
+        <form class="record-form" id="recordForm">
+            <div class="form-grid" id="formFields"></div>
+
+            <p class="form-message" id="formMessage"></p>
+
+            <div class="form-actions">
+                <button type="button" class="form-button secondary"
+                    onclick="window.location.href='manage-vehicles.html'">
+                    Cancel
+                </button>
+
+                <button type="submit" class="form-button primary" id="submitButton">
+                    Save
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script src="../record-form.js"></script>
+</body>
+</html>
