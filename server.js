@@ -36,7 +36,10 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && url.pathname === '/api/admin/summary') return sendJson(res, 200, await admin.getSummary());
     if (req.method === 'GET' && url.pathname === '/api/admin/bookings') return sendJson(res, 200, await admin.getBookings());
-    if (req.method === 'GET' && url.pathname === '/api/admin/map-vehicles') return sendJson(res, 200, await admin.getMapVehicles());
+    if (req.method === 'GET' && url.pathname === '/api/admin/drivers')
+    return sendJson(res, 200, await admin.getDrivers());
+    if (req.method === 'GET' && url.pathname === '/api/admin/passengers')
+    return sendJson(res, 200, await admin.getPassengers());
     if (url.pathname.startsWith('/api/')) return sendJson(res, 404, { error: 'API endpoint not found' });
     return serveStatic(url.pathname, res);
   } catch (error) {

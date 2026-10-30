@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver & Passenger Details | CabFlow</title>
+
+    <link rel="stylesheet" href="/admin/admin.css">
+    <link rel="stylesheet" href="/admin/pages/view-users.css">
+</head>
+<body>
+
+<main class="main-content users-page">
+
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">ADMINISTRATION</p>
+            <h1>Driver & Passenger Details</h1>
+            <p class="subheading">
+                View registered drivers and passengers.
+            </p>
+        </div>
+
+        <button class="secondary-btn" onclick="window.location.href='/admin/admin-dashboard.html'">
+            ← Back to Dashboard
+        </button>
+    </header>
+
+    <!-- DRIVERS TABLE -->
+    <section class="panel users-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h2>Drivers</h2>
+                <p>Registered driver details</p>
+            </div>
+
+            <span class="count-badge" id="driverCount">0 drivers</span>
+        </div>
+
+        <input
+            type="search"
+            id="driverSearch"
+            class="user-search"
+            placeholder="Search drivers by name..."
+        >
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>MOBILE</th>
+                        <th>LICENSE NUMBER</th>
+                        <th>LICENSE EXPIRY</th>
+                        <th>VERIFICATION</th>
+                        <th>RATING</th>
+                        <th>ACCOUNT STATUS</th>
+                    </tr>
+                </thead>
+
+                <tbody id="driverRows">
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            Loading drivers...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+
+    <!-- PASSENGERS TABLE -->
+    <section class="panel users-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h2>Passengers</h2>
+                <p>Registered passenger details</p>
+            </div>
+
+            <span class="count-badge" id="passengerCount">0 passengers</span>
+        </div>
+
+        <input
+            type="search"
+            id="passengerSearch"
+            class="user-search"
+            placeholder="Search passengers by name..."
+        >
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>MOBILE</th>
+                        <th>DEFAULT ADDRESS</th>
+                        <th>EMERGENCY CONTACT</th>
+                        <th>ACCOUNT STATUS</th>
+                    </tr>
+                </thead>
+
+                <tbody id="passengerRows">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            Loading passengers...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <footer>
+        CabFlow Admin · Driver and Passenger Management
+    </footer>
+
+</main>
+
+<script src="/admin/pages/view-users.js"></script>
+
+</body>
+</html>

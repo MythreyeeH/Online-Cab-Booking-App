@@ -1,0 +1,104 @@
+
+.users-page {
+    padding-bottom: 30px;
+}
+
+.users-panel {
+    margin-bottom: 28px;
+    padding: 24px;
+}
+
+.users-panel .panel-heading {
+    margin-bottom: 20px;
+}
+
+.user-search {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #dedee8;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+.user-search:focus {
+    border-color: #635bda;
+    box-shadow: 0 0 0 3px rgba(99, 91, 218, 0.1);
+}
+
+.users-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.users-panel th {
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 11px;
+    color: #77778a;
+    background: #f8f8fb;
+    white-space: nowrap;
+}
+
+.users-panel td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #eeeeF3;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.users-panel tbody tr:hover {
+    background: #fafaff;
+}
+
+.account-status,
+.verification-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active,
+.status-approved {
+    background: #e5f7ed;
+    color: #198754;
+}
+
+.status-pending,
+.status-inactive {
+    background: #fff4dc;
+    color: #a66a00;
+}
+
+.status-blocked,
+.status-rejected {
+    background: #fde8e8;
+    color: #c0392b;
+}
+
+.users-panel .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+}
+
+@media (max-width: 768px) {
+    .users-panel {
+        padding: 15px;
+    }
+
+    .users-page .topbar {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .user-search {
+        max-width: 100%;
+    }
+}

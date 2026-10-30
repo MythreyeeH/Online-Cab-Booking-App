@@ -1,36 +1,75 @@
 const API = '/api/admin';
 const features = [
-  ['dashboard','▦','Dashboard',null],
-  ['passengers','♙','Manage passengers','Manage Passengers'],
-  ['drivers','♧','Manage drivers','Manage Drivers'],
-  ['approvals','✓','Driver approvals','Approve / Reject Drivers'],
-  ['vehicles','▰','Manage vehicles','Manage Vehicles'],
-  ['areas','⌖','Service areas','Manage Service Areas'],
-  ['fares','₹','Fare rules','Manage Fare Rules'],
-  ['trips','⇄','Trips & bookings','Monitor Trips & Bookings'],
-  ['issues','⚑','Booking issues','Resolve Booking Issues'],
-  ['reports','▤','Reports & revenue','View Reports'],
-  ['activity','◷','System activity','Monitor System Activity']
+    ['dashboard', '▦', 'Dashboard', null],
+
+    ['start-trip', '↗', 'Start/complete trip', 'Start/complete trip'],
+
+    ['user-details', '♙', 'View driver and passenger details', 'View driver and passenger details'],
+
+    ['drivers', '♧', 'Manage drivers', 'Manage drivers'],
+
+    ['passengers', '♙', 'Manage passengers', 'Manage passengers'],
+
+    ['vehicles', '▰', 'Manage vehicles', 'Manage vehicles'],
+
+    ['fares-areas', '₹', 'Manage fares and service areas', 'Manage fares and service areas'],
+
+    ['reports', '▤', 'View reports', 'View reports'],
+
+    ['users', '⚑', 'Manage users', 'Manage users'],
+
+    ['profile', '◉', 'Manage own profile', 'Manage own profile'],
+
+    ['available-rides', '⌖', 'Search and view available rides', 'Search and view available rides']
 ];
 let allBookings = [];
 let rideMap;
 const nav = document.getElementById('adminNav');
 
 function renderNavigation() {
-  nav.innerHTML = features.map(([id, icon, label, page]) => `
-    <button type="button" class="nav-button ${id === 'dashboard' ? 'active' : ''}" data-feature="${id}" ${page ? `data-page="${page}"` : ''}>
-      <span class="nav-icon">${icon}</span><span>${label}</span>
-    </button>`).join('');
-  nav.addEventListener('click', (event) => {
-    const button = event.target.closest('.nav-button');
-    if (!button) return;
-    if (button.dataset.page) {
-      window.location.href = `/admin/pages/feature.html?feature=${encodeURIComponent(button.dataset.page)}`;
-      return;
-    }
-    nav.querySelectorAll('.nav-button').forEach(item => item.classList.toggle('active', item === button));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+
+    nav.innerHTML = features.map(([id, icon, label, page]) => `
+        <button
+            type="button"
+            class="nav-button ${id === 'dashboard' ? 'active' : ''}"
+            data-feature="${id}"
+            ${page ? `data-page="${page}"` : ''}
+        >
+            <span class="nav-icon">${icon}</span>
+            <span>${label}</span>
+        </button>
+    `).join('');
+
+    nav.addEventListener('click', (event) => {
+
+        const button = event.target.closest('.nav-button');
+
+        if (!button) return;
+
+        // Navigate to feature page
+        if (button.dataset.feature === 'user-details') {
+            window.location.href = '/admin/pages/view-users.html';
+            return;
+        }
+
+        if (button.dataset.page) {
+            window.location.href =
+                `/admin/pages/feature.html?feature=${encodeURIComponent(button.dataset.page)}`;
+
+            return;
+        }
+
+        // Dashboard button
+        nav.querySelectorAll('.nav-button').forEach(item => {
+            item.classList.toggle('active', item === button);
+        });
+
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+
+    });
 }
 
 async function fetchJson(url) {
@@ -45,6 +84,49 @@ async function loadSummary() {
   document.getElementById('driverCount').textContent = summary.drivers;
   document.getElementById('activeCount').textContent = summary.activeTrips;
   document.getElementById('revenueCount').textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(summary.revenue);
+}
+
+// Fetch all driver details
+async function getDrivers() {
+    const [rows] = await db.query(`
+        SELECT
+            u.user_id,
+            dp.driver_id,
+            u.name,
+            u.email,
+            u.mobile,
+            u.status AS account_status,
+            dp.license_no,
+            dp.license_expiry,
+            dp.verification_status,
+            dp.rating
+        FROM driver_profiles dp
+        JOIN users u ON u.user_id = dp.user_id
+        ORDER BY u.name ASC
+    `);
+
+    return rows;
+}
+
+
+// Fetch all passenger details
+async function getPassengers() {
+    const [rows] = await db.query(`
+        SELECT
+            u.user_id,
+            pp.passenger_id,
+            u.name,
+            u.email,
+            u.mobile,
+            u.status AS account_status,
+            pp.default_address,
+            pp.emergency_contact
+        FROM passenger_profiles pp
+        JOIN users u ON u.user_id = pp.user_id
+        ORDER BY u.name ASC
+    `);
+
+    return rows;
 }
 
 function safe(value) {
