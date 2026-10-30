@@ -723,6 +723,89 @@ async function deleteUser(userId) {
     });
 }
 
+// ==========================================
+// REPORT: DAILY REVENUE
+// ==========================================
+
+async function getRevenueReport(days = 30) {
+    const [rows] = await db.query(`
+        SELECT
+            DATE(start_time) AS report_date,
+            COALESCE(SUM(fare), 0) AS total_revenue
+        FROM trips
+        WHERE trip_status = 'COMPLETED'
+          AND start_time >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY DATE(start_time)
+        ORDER BY report_date
+    `, [days]);
+
+    return rows;
+}
+
+
+// ==========================================
+// REPORT: DAILY TRIPS
+// ==========================================
+
+async function getTripReport(days = 30) {
+    const [rows] = await db.query(`
+        SELECT
+            DATE(start_time) AS report_date,
+            COUNT(*) AS total_trips
+        FROM trips
+        WHERE start_time >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY DATE(start_time)
+        ORDER BY report_date
+    `, [days]);
+
+    return rows;
+}
+
+
+// ==========================================
+// REPORT: COMPLETED TRIPS PER DRIVER
+// ==========================================
+
+async function getDriverReport(days = 30) {
+    const [rows] = await db.query(`
+        SELECT
+            u.name AS driver_name,
+            COUNT(t.trip_id) AS completed_trips
+        FROM trips t
+        JOIN driver_profiles d
+            ON t.driver_id = d.driver_id
+        JOIN users u
+            ON d.user_id = u.user_id
+        WHERE t.trip_status = 'COMPLETED'
+          AND t.start_time >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY d.driver_id, u.name
+        ORDER BY completed_trips DESC
+        LIMIT 10
+    `, [days]);
+
+    return rows;
+}
+
+
+// ==========================================
+// REPORT: DAILY PASSENGER REGISTRATIONS
+// ==========================================
+
+async function getPassengerReport(days = 30) {
+    const [rows] = await db.query(`
+        SELECT
+            DATE(created_at) AS report_date,
+            COUNT(*) AS new_passengers
+        FROM users
+        WHERE role = 'PASSENGER'
+          AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY report_date
+    `, [days]);
+
+    return rows;
+}
+
 module.exports = {
     getSummary,
     getBookings,
@@ -758,5 +841,10 @@ module.exports = {
 
     // Fare rules
     listFareRules,
-    updateFareRule
+    updateFareRule,
+
+    getRevenueReport,
+    getTripReport,
+    getDriverReport,
+    getPassengerReport
 };

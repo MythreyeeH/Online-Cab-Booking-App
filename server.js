@@ -404,16 +404,57 @@ const server = http.createServer(async (req, res) => {
             );
         }
 
-
         // ==========================================
-        // UNKNOWN API ROUTE
+        // REPORT ENDPOINTS
         // ==========================================
 
-        if (pathname.startsWith('/api/')) {
-            return sendJson(res, 404, {
-                error: 'API endpoint not found'
-            });
+        const reportMatch = pathname.match(
+            /^\/api\/admin\/reports\/(revenue|trips|drivers|passengers)$/
+        );
+
+        if (reportMatch && req.method === 'GET') {
+
+            const days = Number(url.searchParams.get('days') || 30);
+
+            if (![7, 30].includes(days)) {
+                return sendJson(res, 400, {
+                    error: 'Invalid report period'
+                });
+            }
+
+            let result;
+
+            switch (reportMatch[1]) {
+
+                case 'revenue':
+                    result = await admin.getRevenueReport(days);
+                    break;
+
+                case 'trips':
+                    result = await admin.getTripReport(days);
+                    break;
+
+                case 'drivers':
+                    result = await admin.getDriverReport(days);
+                    break;
+
+                case 'passengers':
+                    result = await admin.getPassengerReport(days);
+                    break;
+            }
+
+            return sendJson(res, 200, result);
         }
+
+                // ==========================================
+                // UNKNOWN API ROUTE
+                // ==========================================
+
+                if (pathname.startsWith('/api/')) {
+                    return sendJson(res, 404, {
+                        error: 'API endpoint not found'
+                    });
+                }
 
 
         // ==========================================
