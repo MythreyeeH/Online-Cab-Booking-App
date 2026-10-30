@@ -1,4 +1,3 @@
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -22,16 +21,20 @@ const MIME = {
     '.jpeg': 'image/jpeg'
 };
 
+// Send JSON response
 function sendJson(res, status, data) {
     res.writeHead(status, {
         'Content-Type': 'application/json; charset=utf-8',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Cache-Control': 'no-store'
     });
 
     res.end(JSON.stringify(data));
 }
 
+// Read JSON request body
 function readBody(req) {
     return new Promise((resolve, reject) => {
         let body = '';
@@ -46,7 +49,9 @@ function readBody(req) {
         });
 
         req.on('end', () => {
-            if (!body) return resolve({});
+            if (!body) {
+                return resolve({});
+            }
 
             try {
                 resolve(JSON.parse(body));
@@ -59,6 +64,7 @@ function readBody(req) {
     });
 }
 
+// Serve frontend files
 function serveStatic(pathname, res) {
     let requested;
 
@@ -69,11 +75,16 @@ function serveStatic(pathname, res) {
         return res.end('Invalid URL');
     }
 
-    if (requested === '/') requested = '/index.html';
+    if (requested === '/') {
+        requested = '/index.html';
+    }
 
     const filePath = path.resolve(FRONTEND, `.${requested}`);
 
-    if (!filePath.startsWith(FRONTEND + path.sep) && filePath !== FRONTEND) {
+    if (
+        !filePath.startsWith(FRONTEND + path.sep) &&
+        filePath !== FRONTEND
+    ) {
         res.writeHead(403);
         return res.end('Forbidden');
     }
@@ -83,33 +94,47 @@ function serveStatic(pathname, res) {
             res.writeHead(404, {
                 'Content-Type': 'text/plain; charset=utf-8'
             });
+
             return res.end('Page not found');
         }
 
         res.writeHead(200, {
-            'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream'
+            'Content-Type':
+                MIME[path.extname(filePath).toLowerCase()] ||
+                'application/octet-stream'
         });
 
         res.end(content);
     });
 }
 
+// Create HTTP server
 const server = http.createServer(async (req, res) => {
-<<<<<<< HEAD
+
+    // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
         res.writeHead(204, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type'
         });
+
         return res.end();
     }
 
-    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const url = new URL(
+        req.url,
+        `http://${req.headers.host || 'localhost'}`
+    );
+
     const pathname = url.pathname;
 
     try {
-        // Dashboard endpoints
+
+        // ==========================================
+        // DASHBOARD ENDPOINTS
+        // ==========================================
+
         if (req.method === 'GET' && pathname === '/api/admin/summary') {
             return sendJson(res, 200, await admin.getSummary());
         }
@@ -122,49 +147,89 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, await admin.getMapVehicles());
         }
 
-        // Driver endpoints
+
+        // ==========================================
+        // DRIVER ENDPOINTS
+        // ==========================================
+
         if (req.method === 'GET' && pathname === '/api/admin/drivers') {
             return sendJson(res, 200, await admin.listDrivers());
         }
 
         if (req.method === 'POST' && pathname === '/api/admin/drivers') {
             const body = await readBody(req);
-            return sendJson(res, 201, await admin.createDriver(body));
+
+            return sendJson(
+                res,
+                201,
+                await admin.createDriver(body)
+            );
         }
 
         let match = pathname.match(/^\/api\/admin\/drivers\/(\d+)$/);
 
         if (match && req.method === 'PUT') {
             const body = await readBody(req);
-            return sendJson(res, 200, await admin.updateDriver(Number(match[1]), body));
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateDriver(Number(match[1]), body)
+            );
         }
 
         if (match && req.method === 'DELETE') {
-            return sendJson(res, 200, await admin.deleteDriver(Number(match[1])));
+            return sendJson(
+                res,
+                200,
+                await admin.deleteDriver(Number(match[1]))
+            );
         }
 
-        // Passenger endpoints
+
+        // ==========================================
+        // PASSENGER ENDPOINTS
+        // ==========================================
+
         if (req.method === 'GET' && pathname === '/api/admin/passengers') {
             return sendJson(res, 200, await admin.listPassengers());
         }
 
         if (req.method === 'POST' && pathname === '/api/admin/passengers') {
             const body = await readBody(req);
-            return sendJson(res, 201, await admin.createPassenger(body));
+
+            return sendJson(
+                res,
+                201,
+                await admin.createPassenger(body)
+            );
         }
 
         match = pathname.match(/^\/api\/admin\/passengers\/(\d+)$/);
 
         if (match && req.method === 'PUT') {
             const body = await readBody(req);
-            return sendJson(res, 200, await admin.updatePassenger(Number(match[1]), body));
+
+            return sendJson(
+                res,
+                200,
+                await admin.updatePassenger(Number(match[1]), body)
+            );
         }
 
         if (match && req.method === 'DELETE') {
-            return sendJson(res, 200, await admin.deletePassenger(Number(match[1])));
+            return sendJson(
+                res,
+                200,
+                await admin.deletePassenger(Number(match[1]))
+            );
         }
 
-        // Vehicle endpoints
+
+        // ==========================================
+        // VEHICLE ENDPOINTS
+        // ==========================================
+
         if (req.method === 'GET' && pathname === '/api/admin/vehicles') {
             return sendJson(res, 200, await admin.listVehicles());
         }
@@ -175,21 +240,39 @@ const server = http.createServer(async (req, res) => {
 
         if (req.method === 'POST' && pathname === '/api/admin/vehicles') {
             const body = await readBody(req);
-            return sendJson(res, 201, await admin.createVehicle(body));
+
+            return sendJson(
+                res,
+                201,
+                await admin.createVehicle(body)
+            );
         }
 
         match = pathname.match(/^\/api\/admin\/vehicles\/(\d+)$/);
 
         if (match && req.method === 'PUT') {
             const body = await readBody(req);
-            return sendJson(res, 200, await admin.updateVehicle(Number(match[1]), body));
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateVehicle(Number(match[1]), body)
+            );
         }
 
         if (match && req.method === 'DELETE') {
-            return sendJson(res, 200, await admin.deleteVehicle(Number(match[1])));
+            return sendJson(
+                res,
+                200,
+                await admin.deleteVehicle(Number(match[1]))
+            );
         }
 
-        // Combined passenger + driver user management
+
+        // ==========================================
+        // USER MANAGEMENT ENDPOINTS
+        // ==========================================
+
         if (req.method === 'GET' && pathname === '/api/admin/users') {
             return sendJson(res, 200, await admin.listUsers());
         }
@@ -198,55 +281,75 @@ const server = http.createServer(async (req, res) => {
 
         if (match && req.method === 'PUT') {
             const body = await readBody(req);
-            return sendJson(res, 200, await admin.updateUser(Number(match[1]), body));
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateUser(Number(match[1]), body)
+            );
         }
 
         if (match && req.method === 'DELETE') {
-            return sendJson(res, 200, await admin.deleteUser(Number(match[1])));
+            return sendJson(
+                res,
+                200,
+                await admin.deleteUser(Number(match[1]))
+            );
         }
 
-        // --------------------------------------------------
-// SERVICE AREA ENDPOINTS
-// --------------------------------------------------
 
-if (req.method === 'GET' && pathname === '/api/admin/service-areas') {
-    return sendJson(res, 200, await admin.listServiceAreas());
-}
+        // ==========================================
+        // SERVICE AREA ENDPOINTS
+        // ==========================================
 
-if (req.method === 'POST' && pathname === '/api/admin/service-areas') {
-    const body = await readBody(req);
-    return sendJson(res, 201, await admin.createServiceArea(body));
-}
+        if (req.method === 'GET' && pathname === '/api/admin/service-areas') {
+            return sendJson(res, 200, await admin.listServiceAreas());
+        }
 
-let areaMatch = pathname.match(/^\/api\/admin\/service-areas\/(\d+)$/);
+        if (req.method === 'POST' && pathname === '/api/admin/service-areas') {
+            const body = await readBody(req);
 
-if (areaMatch && req.method === 'PUT') {
-    const body = await readBody(req);
-    return sendJson(
-        res,
-        200,
-        await admin.updateServiceArea(Number(areaMatch[1]), body)
-    );
-}
+            return sendJson(
+                res,
+                201,
+                await admin.createServiceArea(body)
+            );
+        }
 
-if (areaMatch && req.method === 'DELETE') {
-    return sendJson(
-        res,
-        200,
-        await admin.deleteServiceArea(Number(areaMatch[1]))
-    );
-}
+        const areaMatch = pathname.match(
+            /^\/api\/admin\/service-areas\/(\d+)$/
+        );
+
+        if (areaMatch && req.method === 'PUT') {
+            const body = await readBody(req);
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateServiceArea(Number(areaMatch[1]), body)
+            );
+        }
+
+        if (areaMatch && req.method === 'DELETE') {
+            return sendJson(
+                res,
+                200,
+                await admin.deleteServiceArea(Number(areaMatch[1]))
+            );
+        }
 
 
-        // --------------------------------------------------
+        // ==========================================
         // FARE RULE ENDPOINTS
-        // --------------------------------------------------
+        // ==========================================
 
         if (req.method === 'GET' && pathname === '/api/admin/fare-rules') {
             return sendJson(res, 200, await admin.listFareRules());
         }
 
-        const fareMatch = pathname.match(/^\/api\/admin\/fare-rules\/(\d+)$/);
+        const fareMatch = pathname.match(
+            /^\/api\/admin\/fare-rules\/(\d+)$/
+        );
 
         if (fareMatch && req.method === 'PUT') {
             const body = await readBody(req);
@@ -258,48 +361,94 @@ if (areaMatch && req.method === 'DELETE') {
             );
         }
 
-        if (pathname.startsWith('/api/')) {
-            return sendJson(res, 404, { error: 'API endpoint not found' });
+
+        // ==========================================
+        // START / COMPLETE TRIP ENDPOINTS
+        // ==========================================
+
+        if (req.method === 'GET' && pathname === '/api/admin/ongoing-trips') {
+            return sendJson(
+                res,
+                200,
+                await admin.listOngoingTrips()
+            );
         }
 
+        if (req.method === 'GET' && pathname === '/api/admin/trip-form-options') {
+            return sendJson(
+                res,
+                200,
+                await admin.getTripFormOptions()
+            );
+        }
+
+        if (req.method === 'POST' && pathname === '/api/admin/trips') {
+            const body = await readBody(req);
+
+            return sendJson(
+                res,
+                201,
+                await admin.createTrip(body)
+            );
+        }
+
+        const tripMatch = pathname.match(
+            /^\/api\/admin\/trips\/(\d+)\/complete$/
+        );
+
+        if (tripMatch && req.method === 'PUT') {
+            return sendJson(
+                res,
+                200,
+                await admin.completeTrip(Number(tripMatch[1]))
+            );
+        }
+
+
+        // ==========================================
+        // UNKNOWN API ROUTE
+        // ==========================================
+
+        if (pathname.startsWith('/api/')) {
+            return sendJson(res, 404, {
+                error: 'API endpoint not found'
+            });
+        }
+
+
+        // ==========================================
+        // SERVE FRONTEND
+        // ==========================================
+
         return serveStatic(pathname, res);
+
     } catch (error) {
-        console.error(error);
+
+        console.error('Request error:', error);
 
         const duplicate = error.code === 'ER_DUP_ENTRY';
-        const foreignKey = error.code === 'ER_ROW_IS_REFERENCED_2';
 
-        const status = duplicate ? 409 : foreignKey ? 409 : 400;
+        const foreignKey = [
+            'ER_ROW_IS_REFERENCED_2',
+            'ER_NO_REFERENCED_ROW_2'
+        ].includes(error.code);
+
+        const status = duplicate || foreignKey ? 409 : 400;
 
         return sendJson(res, status, {
             error: duplicate
                 ? 'A record with this email, mobile number, license number or vehicle number already exists.'
                 : foreignKey
-                    ? 'This record is linked to existing trips or other records and cannot be deleted.'
+                    ? 'This operation conflicts with a related database record. Check the linked records.'
                     : error.message || 'Server/database error.'
         });
     }
-=======
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204, { 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Methods':'GET,OPTIONS', 'Access-Control-Allow-Headers':'Content-Type' });
-    return res.end();
-  }
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  try {
-    if (req.method === 'GET' && url.pathname === '/api/admin/summary') return sendJson(res, 200, await admin.getSummary());
-    if (req.method === 'GET' && url.pathname === '/api/admin/bookings') return sendJson(res, 200, await admin.getBookings());
-    if (req.method === 'GET' && url.pathname === '/api/admin/drivers')
-    return sendJson(res, 200, await admin.getDrivers());
-    if (req.method === 'GET' && url.pathname === '/api/admin/passengers')
-    return sendJson(res, 200, await admin.getPassengers());
-    if (url.pathname.startsWith('/api/')) return sendJson(res, 404, { error: 'API endpoint not found' });
-    return serveStatic(url.pathname, res);
-  } catch (error) {
-    console.error(error);
-    return sendJson(res, 500, { error: 'Server/database error. Check backend configuration and MySQL connection.' });
-  }
->>>>>>> dffb997204aca0c12cfb51a635ba9fd8e9c361dd
 });
+
+
+// ==========================================
+// START SERVER
+// ==========================================
 
 server.listen(PORT, () => {
     console.log(`Cab Booking app running at http://localhost:${PORT}`);
