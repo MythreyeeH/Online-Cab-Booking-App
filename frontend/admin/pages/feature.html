@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin Feature | CabFlow</title><link rel="stylesheet" href="/admin/admin.css"></head>
+<body><main class="main-content placeholder-main"><a class="back-link" href="/admin/admin-dashboard.html">← Back to dashboard</a><header class="topbar" style="margin-top:25px"><div><p class="eyebrow">ADMIN WORKSPACE</p><h1 id="featureTitle">Feature page</h1><p class="subheading">This page is a placeholder for the next implementation step.</p></div></header><section class="placeholder-card"><h2>Coming next</h2><p id="featureDescription">This feature is wired into the dashboard navigation. Its data table, filters, and create/update actions can be added here using the shared Node.js REST API and MySQL database.</p><p><strong>Suggested next step:</strong> create the corresponding API endpoint in <code>backend/routes/admin.js</code>, then fetch its results with JavaScript and render them into this page.</p></section></main><script>
+const params = new URLSearchParams(location.search);
+const feature = params.get('feature') || 'Admin feature';
+document.getElementById('featureTitle').textContent = feature;
+document.title = `${feature} | CabFlow Admin`;
+</script></body></html>

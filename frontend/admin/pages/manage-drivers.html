@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Records | Cab Booking Admin</title>
+    <link rel="stylesheet" href="../manage-records.css">
+</head>
+<body data-feature="drivers">
+    <main class="records-page">
+        <header class="records-header">
+            <div>
+                <h1 id="recordsTitle">Manage Records</h1>
+                <p id="recordsDescription"></p>
+            </div>
+
+            <div class="records-actions">
+                <button class="records-button secondary"
+                    onclick="window.location.href='../admin-dashboard.html'">
+                    ← Dashboard
+                </button>
+
+                <button class="records-button" id="addRecordBtn">
+                    Add Record
+                </button>
+            </div>
+        </header>
+
+        <div class="records-toolbar">
+            <input
+                type="search"
+                id="recordsSearch"
+                placeholder="Search records..."
+            >
+        </div>
+
+        <p class="records-message" id="recordsMessage"></p>
+
+        <div class="records-table-wrapper">
+            <table class="records-table">
+                <thead id="recordsHead"></thead>
+                <tbody id="recordsBody">
+                    <tr>
+                        <td class="records-empty">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="../manage-records.js"></script>
+</body>
+</html>

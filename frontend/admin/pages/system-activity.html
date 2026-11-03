@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>System Activity Monitoring | Cab Booking Admin</title>
+
+    <link rel="stylesheet" href="../system-activity.css">
+</head>
+
+<body>
+
+    <main class="activity-page">
+
+        <header class="activity-header">
+
+            <div>
+                <h1>System Activity Monitoring</h1>
+
+                <p>
+                    View system activity records fetched directly
+                    from the database.
+                </p>
+            </div>
+
+            <div class="activity-actions">
+
+                <button class="back-button"
+                    onclick="window.location.href='../admin-dashboard.html'">
+                    ← Dashboard
+                </button>
+
+                <button id="refreshLogs">
+                    Refresh
+                </button>
+
+            </div>
+
+        </header>
+
+        <p id="activityMessage"></p>
+
+        <div class="activity-table-wrapper">
+
+            <table class="activity-table">
+
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>User ID</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>IP Address</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+
+                <tbody id="activityRows">
+
+                    <tr>
+                        <td colspan="6" class="empty-row">
+                            Loading activity records...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <script src="../system-activity.js"></script>
+
+</body>
+</html>
