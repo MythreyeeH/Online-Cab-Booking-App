@@ -6,9 +6,11 @@ const { URL } = require('url');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const admin = require('./routes/admin');
+const passenger = require('./routes/passenger');
+const passengerAuth = require('./routes/passenger-auth');
 
 const PORT = Number(process.env.PORT || 3000);
-const FRONTEND = path.resolve(__dirname, '../frontend');
+const FRONTEND = path.join(__dirname, 'frontend');
 
 const MIME = {
     '.html': 'text/html; charset=utf-8',
@@ -22,13 +24,14 @@ const MIME = {
 };
 
 // Send JSON response
-function sendJson(res, status, data) {
+function sendJson(res, status, data, headers = {}) {
     res.writeHead(status, {
         'Content-Type': 'application/json; charset=utf-8',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'no-store',
+        ...headers
     });
 
     res.end(JSON.stringify(data));
@@ -130,6 +133,176 @@ const server = http.createServer(async (req, res) => {
     const pathname = url.pathname;
 
     try {
+
+        // ==========================================
+        // PASSENGER ACCOUNT ENDPOINTS
+        // ==========================================
+
+        if (
+            req.method === 'POST' &&
+            pathname === '/api/passenger/register'
+        ) {
+            const body = await readBody(req);
+            const result = await passengerAuth.register(body);
+
+            return sendJson(
+                res,
+                201,
+                { passenger: result.passenger },
+                { 'Set-Cookie': result.cookie }
+            );
+        }
+
+        if (
+            req.method === 'POST' &&
+            pathname === '/api/passenger/login'
+        ) {
+            const body = await readBody(req);
+            const result = await passengerAuth.login(
+                body,
+                req.socket.remoteAddress || 'unknown'
+            );
+
+            return sendJson(
+                res,
+                200,
+                { passenger: result.passenger },
+                { 'Set-Cookie': result.cookie }
+            );
+        }
+
+        if (
+            req.method === 'POST' &&
+            pathname === '/api/passenger/logout'
+        ) {
+            return sendJson(
+                res,
+                200,
+                { message: 'Signed out successfully' },
+                { 'Set-Cookie': passengerAuth.logout(req) }
+            );
+        }
+
+        if (
+            req.method === 'GET' &&
+            pathname === '/api/passenger/session'
+        ) {
+            const currentPassenger = await passengerAuth.getSession(req);
+
+            return sendJson(res, 200, {
+                authenticated: Boolean(currentPassenger),
+                passenger: currentPassenger
+            });
+        }
+
+        // PASSENGER RIDE SEARCH ENDPOINTS
+        // ==========================================
+
+        if (
+            req.method === 'GET' &&
+            pathname === '/api/passenger/available-cabs'
+        ) {
+            return sendJson(
+                res,
+                200,
+                await passenger.searchAvailableCabs({
+                    pickup_location: url.searchParams.get('pickup_location'),
+                    destination: url.searchParams.get('destination')
+                })
+            );
+        }
+
+        if (pathname.startsWith('/api/passenger/')) {
+            const currentPassenger = await passengerAuth.getSession(req);
+
+            if (!currentPassenger) {
+                return sendJson(res, 401, {
+                    error: 'Please sign in to access your passenger account'
+                });
+            }
+
+            if (
+                req.method === 'POST' &&
+                pathname === '/api/passenger/bookings'
+            ) {
+                const body = await readBody(req);
+
+                return sendJson(
+                    res,
+                    201,
+                    await passenger.createBooking(
+                        currentPassenger.passenger_id,
+                        body
+                    )
+                );
+            }
+
+            if (
+                req.method === 'GET' &&
+                pathname === '/api/passenger/active-trips'
+            ) {
+                return sendJson(
+                    res,
+                    200,
+                    await passenger.listActiveTrips(
+                        currentPassenger.passenger_id
+                    )
+                );
+            }
+
+            if (
+                req.method === 'GET' &&
+                pathname === '/api/passenger/trip-history'
+            ) {
+                return sendJson(
+                    res,
+                    200,
+                    await passenger.listTripHistory(
+                        currentPassenger.passenger_id,
+                        currentPassenger.user_id
+                    )
+                );
+            }
+
+            let passengerMatch = pathname.match(
+                /^\/api\/passenger\/bookings\/(\d+)$/
+            );
+
+            if (passengerMatch && req.method === 'DELETE') {
+                return sendJson(
+                    res,
+                    200,
+                    await passenger.cancelBooking(
+                        currentPassenger.passenger_id,
+                        Number(passengerMatch[1])
+                    )
+                );
+            }
+
+            passengerMatch = pathname.match(
+                /^\/api\/passenger\/trips\/(\d+)\/review$/
+            );
+
+            if (passengerMatch && req.method === 'POST') {
+                const body = await readBody(req);
+
+                return sendJson(
+                    res,
+                    201,
+                    await passenger.reviewTrip(
+                        currentPassenger.passenger_id,
+                        currentPassenger.user_id,
+                        Number(passengerMatch[1]),
+                        body
+                    )
+                );
+            }
+
+            return sendJson(res, 404, {
+                error: 'Passenger API endpoint not found'
+            });
+        }
+
 
         // ==========================================
         // DASHBOARD ENDPOINTS
@@ -474,7 +647,8 @@ const server = http.createServer(async (req, res) => {
             'ER_NO_REFERENCED_ROW_2'
         ].includes(error.code);
 
-        const status = duplicate || foreignKey ? 409 : 400;
+        const status = error.statusCode ||
+            (duplicate || foreignKey ? 409 : error.code ? 500 : 400);
 
         return sendJson(res, status, {
             error: duplicate

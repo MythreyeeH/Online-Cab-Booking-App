@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Passenger Account | CabFlow</title>
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/account.css">
+</head>
+<body>
+    <header class="page-header">
+        <a class="brand" href="/passenger/account.html">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <a class="back-link" href="/passenger/passenger-dashboard.html">Passenger dashboard</a>
+    </header>
+
+    <main class="account-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER ACCOUNT</p>
+            <h1 id="accountHeading">Welcome back</h1>
+            <p class="subheading">Sign in or create an account to manage your rides.</p>
+        </div>
+
+        <section class="panel account-panel">
+            <div class="account-tabs" role="tablist" aria-label="Passenger account">
+                <button class="account-tab active" id="loginTab" type="button" role="tab" aria-selected="true">Sign in</button>
+                <button class="account-tab" id="registerTab" type="button" role="tab" aria-selected="false">Create account</button>
+            </div>
+
+            <p class="account-message" id="accountMessage" role="status" aria-live="polite"></p>
+
+            <form id="loginForm" class="account-form">
+                <div class="form-field">
+                    <label for="loginEmail">Email address</label>
+                    <input id="loginEmail" name="email" type="email" maxlength="150" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="loginPassword">Password</label>
+                    <input id="loginPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required>
+                </div>
+                <button class="primary-button" type="submit">Sign in</button>
+            </form>
+
+            <form id="registerForm" class="account-form" hidden>
+                <div class="form-field">
+                    <label for="registerName">Full name</label>
+                    <input id="registerName" name="name" type="text" maxlength="100" autocomplete="name" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerEmail">Email address</label>
+                    <input id="registerEmail" name="email" type="email" maxlength="150" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerMobile">Mobile number</label>
+                    <input id="registerMobile" name="mobile" type="tel" maxlength="20" autocomplete="tel" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerPassword">Password</label>
+                    <input id="registerPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>
+                    <small>Use at least 8 characters.</small>
+                </div>
+                <button class="primary-button" type="submit">Create passenger account</button>
+            </form>
+        </section>
+
+        <p class="account-security">Your password is stored as a one-way hash. Passenger pages use a private, HTTP-only sign-in session.</p>
+    </main>
+
+    <script src="/passenger/account.js"></script>
+</body>
+</html>

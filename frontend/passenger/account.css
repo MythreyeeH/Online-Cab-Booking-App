@@ -1,0 +1,80 @@
+.account-content {
+    width: min(460px, calc(100% - 32px));
+    margin: 42px auto;
+}
+
+.account-panel {
+    padding: 20px;
+}
+
+.account-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 4px;
+    border-radius: 9px;
+    background: #f0f3f6;
+}
+
+.account-tab {
+    min-height: 38px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #647184;
+    font: 600 12px 'DM Sans', sans-serif;
+    cursor: pointer;
+}
+
+.account-tab.active {
+    background: #fff;
+    color: #187b56;
+    box-shadow: 0 1px 4px #18223012;
+}
+
+.account-form {
+    display: grid;
+    gap: 16px;
+}
+
+.account-form[hidden] {
+    display: none;
+}
+
+.account-form .primary-button {
+    width: 100%;
+    margin-top: 2px;
+}
+
+.account-form .primary-button:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.account-message {
+    display: none;
+    margin: 0 0 15px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    background: #f0f7f4;
+    color: #246847;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.account-message.visible {
+    display: block;
+}
+
+.account-message.error {
+    background: #fff0f0;
+    color: #b42332;
+}
+
+.account-security {
+    margin: 15px 3px;
+    color: #8b96a4;
+    font-size: 10px;
+    line-height: 1.6;
+}

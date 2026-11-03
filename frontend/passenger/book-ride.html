@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Find a Cab | CabFlow</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/passenger-pages.css">
+</head>
+<body class="auth-pending">
+    <header class="page-header">
+        <a class="brand" href="/passenger/passenger-dashboard.html">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <a class="back-link" href="/passenger/passenger-dashboard.html">← Dashboard</a>
+        <button class="header-button" type="button" data-sign-out>Sign out</button>
+    </header>
+
+    <main class="page-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER / RIDE SEARCH</p>
+            <h1>Find a cab</h1>
+            <p class="subheading">Enter your pickup and destination to compare available cabs and estimated fares.</p>
+        </div>
+
+        <section class="panel" aria-labelledby="route-heading">
+            <div class="panel-heading">
+                <div>
+                    <h2 id="route-heading">Your route</h2>
+                    <p>Enter a place name for each location. The map will show the matching places. No ride is booked.</p>
+                </div>
+            </div>
+
+            <form id="rideSearchForm" class="ride-form">
+                <div class="form-field">
+                    <label for="pickupLocation">Pickup place name</label>
+                    <input
+                        id="pickupLocation"
+                        name="pickup_location"
+                        type="text"
+                        maxlength="255"
+                        placeholder="e.g. Adyar, Chennai"
+                        required
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="destination">Destination place name</label>
+                    <input
+                        id="destination"
+                        name="destination"
+                        type="text"
+                        maxlength="255"
+                        placeholder="e.g. Chennai Central"
+                        required
+                    >
+                </div>
+
+                <div class="map-picker">
+                    <div id="routeMap" role="application" aria-label="Map for selecting pickup and destination"></div>
+                    <p class="map-attribution">
+                        Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>.
+                        Place names are looked up using the <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noreferrer">Nominatim service</a>.
+                    </p>
+                </div>
+
+                <div class="distance-summary" id="distanceSummary" aria-live="polite">
+                    Search for both places to show them on the map and calculate their straight-line distance.
+                </div>
+
+                <div class="form-action">
+                    <button class="primary-button" id="searchButton" type="submit">Search available cabs</button>
+                </div>
+            </form>
+
+            <p class="fare-note">
+                Distance is straight-line, not road distance. Estimated fare = base fare + (per-kilometer rate × distance).
+                Final fare may differ; time charges, tolls, and other fees are not included.
+            </p>
+        </section>
+
+        <section class="panel results-panel" aria-labelledby="results-heading">
+            <div class="panel-heading results-heading">
+                <div>
+                    <h2 id="results-heading">Available cabs</h2>
+                    <p id="resultsDescription">Enter your pickup and destination to see available options.</p>
+                </div>
+                <span id="resultCount" class="count-badge">Not searched</span>
+            </div>
+
+            <p id="searchMessage" class="search-message" role="status" aria-live="polite"></p>
+            <div id="cabResults" class="cab-results"></div>
+        </section>
+
+        <p class="location-privacy">
+            Location searches are sent to OpenStreetMap's public Nominatim service. Avoid entering personal or confidential details;
+            use a nearby public place or landmark instead.
+        </p>
+
+        <footer>CabFlow Passenger · Bookings are linked to your passenger account</footer>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/passenger/passenger-common.js"></script>
+    <script src="/passenger/book-ride.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Profile | CabFlow</title>
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/passenger-pages.css">
+</head>
+<body class="auth-pending" data-page="profile">
+    <header class="page-header">
+        <a class="brand" href="/passenger/passenger-dashboard.html">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <span class="back-link">Hello, <span data-passenger-name>Passenger</span></span>
+        <button class="header-button" type="button" data-sign-out>Sign out</button>
+    </header>
+
+    <main class="page-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER / MY PROFILE</p>
+            <h1>My profile</h1>
+            <p class="subheading">Details from your signed-in passenger account.</p>
+        </div>
+
+        <nav class="passenger-nav" aria-label="Passenger pages">
+            <a href="/passenger/passenger-dashboard.html">Dashboard</a>
+            <a href="/passenger/book-ride.html">Book a ride</a>
+            <a href="/passenger/active-trip.html">Active trip</a>
+            <a href="/passenger/trip-history.html">Trip history</a>
+            <a href="/passenger/profile.html" aria-current="page">My profile</a>
+        </nav>
+
+        <p class="page-message" id="pageMessage" role="status" aria-live="polite"></p>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div><h2>Passenger details</h2><p>Account details are loaded from your signed-in profile.</p></div>
+            </div>
+            <dl class="profile-grid">
+                <div class="profile-item"><dt>Name</dt><dd id="profileName">Loading…</dd></div>
+                <div class="profile-item"><dt>Email</dt><dd id="profileEmail">Loading…</dd></div>
+                <div class="profile-item"><dt>Mobile number</dt><dd id="profileMobile">Loading…</dd></div>
+                <div class="profile-item"><dt>Default address</dt><dd id="profileAddress">Loading…</dd></div>
+                <div class="profile-item"><dt>Emergency contact</dt><dd id="profileEmergency">Loading…</dd></div>
+            </dl>
+        </section>
+
+        <footer>CabFlow Passenger · Profile editing is not included in this feature</footer>
+    </main>
+
+    <script src="/passenger/passenger-common.js"></script>
+    <script src="/passenger/passenger-pages.js"></script>
+</body>
+</html>

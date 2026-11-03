@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Active Trip | CabFlow</title>
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/passenger-pages.css">
+</head>
+<body class="auth-pending" data-page="active-trip">
+    <header class="page-header">
+        <a class="brand" href="/passenger/passenger-dashboard.html">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <span class="back-link">Hello, <span data-passenger-name>Passenger</span></span>
+        <button class="header-button" type="button" data-sign-out>Sign out</button>
+    </header>
+
+    <main class="page-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER / ACTIVE TRIP</p>
+            <h1>Active trip</h1>
+            <p class="subheading">View your booking status, route, fare, and assigned driver.</p>
+        </div>
+
+        <nav class="passenger-nav" aria-label="Passenger pages">
+            <a href="/passenger/passenger-dashboard.html">Dashboard</a>
+            <a href="/passenger/book-ride.html">Book a ride</a>
+            <a href="/passenger/active-trip.html" aria-current="page">Active trip</a>
+            <a href="/passenger/trip-history.html">Trip history</a>
+            <a href="/passenger/profile.html">My profile</a>
+        </nav>
+
+        <p class="page-message" id="pageMessage" role="status" aria-live="polite"></p>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div><h2>Your current bookings</h2><p>Only bookings attached to your passenger account are shown.</p></div>
+                <button class="header-button" id="refreshTripsButton" type="button">Refresh</button>
+            </div>
+            <div class="trip-list" id="activeTrips">
+                <p class="empty-state">Loading your active trips…</p>
+            </div>
+        </section>
+
+        <footer>CabFlow Passenger · Assigned bookings can be cancelled before the trip starts</footer>
+    </main>
+
+    <script src="/passenger/passenger-common.js"></script>
+    <script src="/passenger/passenger-pages.js"></script>
+</body>
+</html>
