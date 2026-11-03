@@ -1,51 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Driver Dashboard</title>
+  <title>CabConnect | Driver Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>CabConnect</h1>
-    <span>Driver Portal</span>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">C</div>
+      <div>
+        <h1>CabConnect</h1>
+        <span>Driver Portal</span>
+      </div>
+    </div>
+    <div class="profile">
+      <div class="avatar">D</div>
+      <div>
+        <strong>Demo Driver</strong>
+        <small>Driver Account</small>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <section class="welcome">
+  <main class="container">
+    <section class="welcome panel">
       <div>
-        <h2>Welcome, Driver!</h2>
-        <p>Manage your rides in one place.</p>
+        <p class="eyebrow">DRIVER DASHBOARD</p>
+        <h2>Welcome back, Driver!</h2>
+        <p>Manage your availability and keep track of your rides.</p>
       </div>
-
-      <button id="availabilityBtn">Go Offline</button>
+      <div class="availability">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText">Online</span>
+        <button id="availabilityBtn" class="btn btn-dark">Go Offline</button>
+      </div>
     </section>
 
     <section class="stats">
-      <article class="card">
-        <p>Today's Trips</p>
+      <article class="stat-card">
+        <span class="stat-icon">🚕</span>
+        <p>Completed Trips</p>
         <h2 id="tripCount">0</h2>
       </article>
-
-      <article class="card">
+      <article class="stat-card">
+        <span class="stat-icon">₹</span>
         <p>Today's Earnings</p>
         <h2 id="earnings">₹0</h2>
       </article>
+      <article class="stat-card">
+        <span class="stat-icon">📩</span>
+        <p>Pending Requests</p>
+        <h2 id="requestCount">0</h2>
+      </article>
     </section>
 
-    <section>
-      <h2>New Ride Requests</h2>
-      <div id="requests"></div>
-    </section>
-
-    <section>
-      <h2>My Trips</h2>
-      <div id="myTrips">
-        <p>No trips accepted yet.</p>
+    <section class="panel section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">NEW OPPORTUNITIES</p>
+          <h2>Incoming Ride Requests</h2>
+        </div>
+        <span class="tag" id="requestLabel">0 requests</span>
       </div>
+      <div id="requests" class="card-list"></div>
     </section>
+
+    <section class="panel section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CURRENT JOURNEY</p>
+          <h2>Active Trip</h2>
+        </div>
+        <span class="tag tag-blue">Live status</span>
+      </div>
+      <div id="activeTrip"></div>
+    </section>
+
+    <section class="panel section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR ACTIVITY</p>
+          <h2>Trip History</h2>
+        </div>
+        <span class="tag">Completed rides</span>
+      </div>
+      <div id="myTrips" class="card-list"></div>
+    </section>
+
+    <footer>
+      <p>CabConnect Driver Portal · Frontend Demonstration</p>
+      <button id="resetBtn" class="reset-btn">Reset demo data</button>
+    </footer>
   </main>
 
   <script src="script.js"></script>
