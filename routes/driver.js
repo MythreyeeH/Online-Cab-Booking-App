@@ -40,12 +40,43 @@ async function getDashboard(driverId) {
             ) AS vehicle_status
     `, [driverId, driverId, driverId]);
 
+    const [[profile]] = await db.query(`
+        SELECT
+            dp.rating,
+            dp.license_no,
+            dp.license_expiry,
+            dp.verification_status,
+            u.name,
+            u.email,
+            u.mobile
+        FROM driver_profiles dp
+        JOIN users u ON u.user_id = dp.user_id
+        WHERE dp.driver_id = ?
+    `, [driverId]);
+
+    const [[vehicle]] = await db.query(`
+        SELECT
+            vehicle_id,
+            vehicle_number,
+            vehicle_type,
+            model,
+            capacity,
+            status
+        FROM vehicles
+        WHERE driver_id = ?
+        LIMIT 1
+    `, [driverId]);
+
     return {
-        todays_trips: Number(stats.todays_trips || 0),
-        todays_earnings: Number(stats.todays_earnings || 0),
-        online: String(stats.vehicle_status || 'OFFLINE') === 'AVAILABLE' ||
-            String(stats.vehicle_status || '') === 'IN_USE',
-        vehicle_status: stats.vehicle_status || 'OFFLINE'
+        todays_trips: Number(stats?.todays_trips || 0),
+        todays_earnings: Number(stats?.todays_earnings || 0),
+        online: String(stats?.vehicle_status || 'OFFLINE') === 'AVAILABLE' ||
+            String(stats?.vehicle_status || '') === 'IN_USE',
+        vehicle_status: stats?.vehicle_status || 'OFFLINE',
+        rating: profile ? Number(profile.rating || 0) : null,
+        license_no: profile ? profile.license_no : null,
+        verification_status: profile ? profile.verification_status : null,
+        vehicle: vehicle || null
     };
 }
 
@@ -97,6 +128,7 @@ async function listMyTrips(driverId) {
             t.distance_km,
             t.trip_status AS status,
             pu.name AS passenger_name,
+            pu.mobile AS passenger_mobile,
             v.vehicle_number,
             v.vehicle_type
         FROM trips t
@@ -398,6 +430,81 @@ async function setAvailability(driverId, online) {
     }
 }
 
+async function listDriverReviews(driverId) {
+    const [rows] = await db.query(`
+        SELECT
+            rr.review_id,
+            rr.rating,
+            rr.comment,
+            rr.created_at,
+            u.name AS passenger_name,
+            t.trip_id
+        FROM ratings_reviews rr
+        JOIN driver_profiles dp ON dp.user_id = rr.reviewed_user_id
+        JOIN users u ON u.user_id = rr.reviewer_id
+        LEFT JOIN trips t ON t.trip_id = rr.trip_id
+        WHERE dp.driver_id = ?
+        ORDER BY rr.created_at DESC, rr.review_id DESC
+    `, [driverId]);
+
+    return rows;
+}
+
+async function getDriverVehicle(driverId) {
+    const [rows] = await db.query(`
+        SELECT vehicle_id, driver_id, vehicle_number, vehicle_type, model, capacity, status
+        FROM vehicles
+        WHERE driver_id = ?
+        LIMIT 1
+    `, [driverId]);
+
+    return rows[0] || null;
+}
+
+async function updateDriverVehicle(driverId, data) {
+    if (!data.vehicle_number || !data.vehicle_type || !data.model) {
+        throw driverError('Vehicle number, vehicle type, and model are required', 400);
+    }
+
+    const [vehicles] = await db.query(
+        'SELECT vehicle_id FROM vehicles WHERE driver_id = ? LIMIT 1',
+        [driverId]
+    );
+
+    if (vehicles.length) {
+        await db.query(`
+            UPDATE vehicles
+            SET vehicle_number = ?,
+                vehicle_type = ?,
+                model = ?,
+                capacity = ?
+            WHERE vehicle_id = ? AND driver_id = ?
+        `, [
+            String(data.vehicle_number).trim(),
+            String(data.vehicle_type).trim(),
+            String(data.model).trim(),
+            Number(data.capacity || 4),
+            vehicles[0].vehicle_id,
+            driverId
+        ]);
+
+        return { message: 'Vehicle details updated successfully' };
+    } else {
+        await db.query(`
+            INSERT INTO vehicles (driver_id, vehicle_number, vehicle_type, model, capacity, status)
+            VALUES (?, ?, ?, ?, ?, 'AVAILABLE')
+        `, [
+            driverId,
+            String(data.vehicle_number).trim(),
+            String(data.vehicle_type).trim(),
+            String(data.model).trim(),
+            Number(data.capacity || 4)
+        ]);
+
+        return { message: 'Vehicle registered successfully' };
+    }
+}
+
 module.exports = {
     requireDriverId,
     getDashboard,
@@ -406,5 +513,8 @@ module.exports = {
     acceptTrip,
     rejectTrip,
     completeTrip,
-    setAvailability
+    setAvailability,
+    listDriverReviews,
+    getDriverVehicle,
+    updateDriverVehicle
 };

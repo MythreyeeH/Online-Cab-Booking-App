@@ -414,6 +414,19 @@ const server = http.createServer(async (req, res) => {
                 );
             }
 
+            if (req.method === 'GET' && pathname === '/api/driver/reviews') {
+                return sendJson(res, 200, await driver.listDriverReviews(driverId));
+            }
+
+            if (req.method === 'GET' && pathname === '/api/driver/vehicle') {
+                return sendJson(res, 200, await driver.getDriverVehicle(driverId));
+            }
+
+            if (req.method === 'PUT' && pathname === '/api/driver/vehicle') {
+                const body = await readBody(req);
+                return sendJson(res, 200, await driver.updateDriverVehicle(driverId, body));
+            }
+
             let driverMatch = pathname.match(/^\/api\/driver\/trips\/(\d+)\/accept$/);
             if (driverMatch && req.method === 'PUT') {
                 return sendJson(

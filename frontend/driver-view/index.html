@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="profile">
-      <div class="avatar">D</div>
+      <div class="avatar" id="driverAvatar">D</div>
       <div>
         <strong data-driver-name>Driver</strong>
         <small>Driver Account</small>
@@ -30,33 +30,104 @@
       <div>
         <p class="eyebrow">DRIVER DASHBOARD</p>
         <h2>Welcome back, <span data-driver-name>Driver</span>!</h2>
-        <p>Manage your availability and keep track of your rides.</p>
+        <p>Manage your availability, active trips, and vehicle details.</p>
       </div>
       <div class="availability">
         <span id="statusDot" class="status-dot"></span>
         <span id="statusText">Online</span>
         <button id="availabilityBtn" class="btn btn-dark" type="button">Go Offline</button>
       </div>
+
+      <div class="driver-info-bar">
+        <div class="driver-meta-item">
+          Vehicle: <strong id="vehicleSummary">Loading...</strong>
+        </div>
+        <div class="driver-meta-item">
+          Rating: <strong id="ratingSummary">★ —</strong>
+        </div>
+        <div class="driver-meta-item">
+          Status: <span id="verificationBadge" class="tag">VERIFIED</span>
+        </div>
+        <div>
+          <button id="toggleVehicleFormBtn" class="btn btn-secondary" type="button">Manage Vehicle</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VEHICLE MANAGEMENT SECTION -->
+    <section id="vehicleSection" class="panel section" style="display: none;">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">VEHICLE DETAILS</p>
+          <h2>Manage Your Vehicle</h2>
+        </div>
+        <button id="closeVehicleBtn" class="btn btn-secondary" type="button">Close</button>
+      </div>
+      <form id="vehicleForm">
+        <div class="form-grid">
+          <label>
+            Vehicle Number
+            <input type="text" id="vehNumber" required placeholder="e.g. TN01AB1001">
+          </label>
+          <label>
+            Vehicle Type
+            <select id="vehType" required>
+              <option value="Mini">Mini</option>
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV</option>
+              <option value="Auto">Auto</option>
+              <option value="Bike">Bike</option>
+            </select>
+          </label>
+          <label>
+            Model
+            <input type="text" id="vehModel" required placeholder="e.g. Hyundai i10">
+          </label>
+          <label>
+            Capacity (Seats)
+            <input type="number" id="vehCapacity" min="1" max="10" required value="4">
+          </label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px;">
+          <button type="submit" class="btn btn-dark">Save Vehicle Details</button>
+          <span id="vehicleMsg" style="font-size: 13px;"></span>
+        </div>
+      </form>
     </section>
 
     <section class="stats">
       <article class="stat-card">
-        <span class="stat-icon">🚕</span>
+        <span class="stat-badge">TODAY'S TRIPS</span>
         <p>Completed Trips</p>
         <h2 id="tripCount">0</h2>
       </article>
       <article class="stat-card">
-        <span class="stat-icon">₹</span>
-        <p>Today's Earnings</p>
+        <span class="stat-badge">EARNINGS</span>
+        <p>Today's Revenue</p>
         <h2 id="earnings">₹0</h2>
       </article>
       <article class="stat-card">
-        <span class="stat-icon">📩</span>
-        <p>Pending Requests</p>
+        <span class="stat-badge">REQUESTS</span>
+        <p>Pending Inbound</p>
         <h2 id="requestCount">0</h2>
       </article>
     </section>
 
+    <!-- ACTIVE TRIP -->
+    <section class="panel section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CURRENT JOURNEY</p>
+          <h2>Active Trip</h2>
+        </div>
+        <span class="tag tag-blue">Live status</span>
+      </div>
+      <div id="activeTrip">
+        <p class="empty-state">No active trip in progress.</p>
+      </div>
+    </section>
+
+    <!-- INCOMING RIDE REQUESTS -->
     <section class="panel section">
       <div class="section-heading">
         <div>
@@ -68,30 +139,34 @@
       <div id="requests" class="card-list"></div>
     </section>
 
-    <section class="panel section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">CURRENT JOURNEY</p>
-          <h2>Active Trip</h2>
-        </div>
-        <span class="tag tag-blue">Live status</span>
-      </div>
-      <div id="activeTrip"></div>
-    </section>
-
+    <!-- TRIP HISTORY -->
     <section class="panel section">
       <div class="section-heading">
         <div>
           <p class="eyebrow">YOUR ACTIVITY</p>
           <h2>Trip History</h2>
         </div>
-        <span class="tag">Completed rides</span>
+        <span class="tag">Past rides</span>
       </div>
       <div id="myTrips" class="card-list"></div>
     </section>
 
+    <!-- RATINGS & REVIEWS -->
+    <section class="panel section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FEEDBACK</p>
+          <h2>Passenger Ratings & Reviews</h2>
+        </div>
+        <span class="tag" id="reviewCountBadge">0 reviews</span>
+      </div>
+      <div id="driverReviews" class="card-list">
+        <p class="empty-state">No passenger reviews yet.</p>
+      </div>
+    </section>
+
     <footer>
-      <p>CabConnect Driver Portal</p>
+      <p>CabConnect Driver Portal · Web Technology Assignment</p>
     </footer>
   </main>
 
