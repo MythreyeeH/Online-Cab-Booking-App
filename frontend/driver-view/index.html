@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CabConnect | Driver Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/driver-view/style.css">
 </head>
 <body>
   <header class="topbar">
@@ -18,9 +18,10 @@
     <div class="profile">
       <div class="avatar">D</div>
       <div>
-        <strong>Demo Driver</strong>
+        <strong data-driver-name>Driver</strong>
         <small>Driver Account</small>
       </div>
+      <button id="signOutBtn" type="button" class="btn btn-dark" style="margin-left: 12px;">Sign out</button>
     </div>
   </header>
 
@@ -28,13 +29,13 @@
     <section class="welcome panel">
       <div>
         <p class="eyebrow">DRIVER DASHBOARD</p>
-        <h2>Welcome back, Driver!</h2>
+        <h2>Welcome back, <span data-driver-name>Driver</span>!</h2>
         <p>Manage your availability and keep track of your rides.</p>
       </div>
       <div class="availability">
         <span id="statusDot" class="status-dot"></span>
         <span id="statusText">Online</span>
-        <button id="availabilityBtn" class="btn btn-dark">Go Offline</button>
+        <button id="availabilityBtn" class="btn btn-dark" type="button">Go Offline</button>
       </div>
     </section>
 
@@ -90,11 +91,10 @@
     </section>
 
     <footer>
-      <p>CabConnect Driver Portal · Frontend Demonstration</p>
-      <button id="resetBtn" class="reset-btn">Reset demo data</button>
+      <p>CabConnect Driver Portal</p>
     </footer>
   </main>
 
-  <script src="script.js"></script>
+  <script src="/driver-view/script.js"></script>
 </body>
 </html>

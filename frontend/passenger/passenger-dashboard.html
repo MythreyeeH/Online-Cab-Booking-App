@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Passenger Dashboard | CabFlow</title>
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/passenger-pages.css">
+</head>
+<body class="auth-pending" data-page="dashboard">
+    <header class="page-header">
+        <a class="brand" href="/passenger/passenger-dashboard.html">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <span class="back-link">Hello, <span data-passenger-name>Passenger</span></span>
+        <button class="header-button" type="button" data-sign-out>Sign out</button>
+    </header>
+
+    <main class="page-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER</p>
+            <h1>My dashboard</h1>
+            <p class="subheading">Manage current rides and review your recent trips.</p>
+        </div>
+
+        <nav class="passenger-nav" aria-label="Passenger pages">
+            <a href="/passenger/passenger-dashboard.html" aria-current="page">Dashboard</a>
+            <a href="/passenger/book-ride.html">Book a ride</a>
+            <a href="/passenger/active-trip.html">Active trip</a>
+            <a href="/passenger/trip-history.html">Trip history</a>
+            <a href="/passenger/profile.html">My profile</a>
+        </nav>
+
+        <p class="page-message" id="pageMessage" role="status" aria-live="polite"></p>
+
+        <section class="summary-grid" aria-label="Your trip summary">
+            <article class="summary-card"><p>Active trips</p><strong id="activeTripCount">—</strong></article>
+            <article class="summary-card"><p>Completed trips</p><strong id="completedTripCount">—</strong></article>
+            <article class="summary-card"><p>Total completed fares</p><strong id="completedFareTotal">—</strong></article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div><h2>Ready to go?</h2><p>Enter your pickup and destination to compare available cabs.</p></div>
+            </div>
+            <div class="trip-list">
+                <a class="primary-link" href="/passenger/book-ride.html">Find and book a cab</a>
+                <a class="secondary-link" href="/passenger/active-trip.html">View active trip</a>
+                <a class="secondary-link" href="/passenger/trip-history.html">View trip history</a>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="recent-heading">
+            <div class="panel-heading">
+                <div><h2 id="recent-heading">Recent trips</h2><p>Your 3 most recent trips across all statuses.</p></div>
+                <a class="secondary-link" href="/passenger/trip-history.html">View all</a>
+            </div>
+            <div id="recentTrips" class="recent-trips-list">
+                <p class="empty-state">Loading recent trips…</p>
+            </div>
+        </section>
+
+        <footer>CabFlow Passenger · Your bookings and trip history are private to your account</footer>
+    </main>
+
+    <script src="/passenger/passenger-common.js"></script>
+    <script src="/passenger/passenger-pages.js"></script>
+</body>
+</html>

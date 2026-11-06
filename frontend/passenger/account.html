@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Passenger Account | CabFlow</title>
+    <link rel="stylesheet" href="/passenger/book-ride.css">
+    <link rel="stylesheet" href="/passenger/account.css">
+</head>
+<body>
+    <header class="page-header">
+        <a class="brand" href="/auth.html?role=PASSENGER">
+            <span class="brand-mark">C</span>
+            <span><strong>CabFlow</strong><small>PASSENGER</small></span>
+        </a>
+        <a class="back-link" href="/auth.html?role=PASSENGER">← Back to Sign in</a>
+    </header>
+
+    <main class="account-content">
+        <div class="page-heading">
+            <p class="eyebrow">PASSENGER REGISTRATION</p>
+            <h1 id="accountHeading">Create your account</h1>
+            <p class="subheading">Register once to book rides, track cabs, and manage your trips.</p>
+        </div>
+
+        <section class="panel account-panel">
+            <p class="account-message" id="accountMessage" role="status" aria-live="polite"></p>
+
+            <form id="registerForm" class="account-form">
+                <div class="form-field">
+                    <label for="registerName">Full name</label>
+                    <input id="registerName" name="name" type="text" maxlength="100" autocomplete="name" placeholder="e.g. Aarav Kumar" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerEmail">Email address</label>
+                    <input id="registerEmail" name="email" type="email" maxlength="150" autocomplete="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerMobile">Mobile number</label>
+                    <input id="registerMobile" name="mobile" type="tel" maxlength="20" autocomplete="tel" placeholder="e.g. 9876543210" required>
+                </div>
+                <div class="form-field">
+                    <label for="registerAddress">Default address <span class="field-optional">(optional)</span></label>
+                    <input id="registerAddress" name="default_address" type="text" maxlength="255" autocomplete="street-address" placeholder="Your usual pickup place (e.g. Adyar, Chennai)">
+                </div>
+                <div class="form-field">
+                    <label for="registerEmergency">Emergency contact <span class="field-optional">(optional)</span></label>
+                    <input id="registerEmergency" name="emergency_contact" type="tel" maxlength="20" autocomplete="tel" placeholder="Emergency phone number">
+                </div>
+                <div class="form-field">
+                    <label for="registerPassword">Password</label>
+                    <input id="registerPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters" required>
+                    <small>Must be at least 8 characters long.</small>
+                </div>
+                <button class="primary-button" type="submit">Create passenger account</button>
+            </form>
+
+            <p style="margin-top: 18px; text-align: center; font-size: 12px; color: #647184;">
+                Already have an account? <a href="/auth.html?role=PASSENGER" style="color: #187b56; font-weight: 600; text-decoration: none;">Sign in at main login →</a>
+            </p>
+        </section>
+
+        <p class="account-security">Your password is securely hashed with scrypt. All passenger pages use a private HTTP-only session.</p>
+    </main>
+
+    <script src="/passenger/account.js"></script>
+</body>
+</html>

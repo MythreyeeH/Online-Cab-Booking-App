@@ -16,6 +16,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .brand, .profile {
@@ -57,25 +58,24 @@ body {
 
 .panel, .stat-card {
   background: white;
-  border: 1px solid #e8ebf0;
-  border-radius: 14px;
-  box-shadow: 0 3px 12px #10182808;
+  border-radius: 12px;
+  border: 1px solid #eaecf0;
 }
 
 .welcome {
-  padding: 28px;
+  padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .eyebrow {
   color: #2563eb;
   font-size: 11px;
   font-weight: bold;
-  letter-spacing: 1.2px;
+  letter-spacing: .08em;
   margin: 0 0 9px;
 }
 
@@ -200,10 +200,26 @@ button:disabled {
   gap: 13px;
 }
 
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+}
+
+.card p {
+  color: #6b7280;
+}
+
+.card h2 {
+  font-size: 30px;
+  margin-bottom: 0;
+}
+
 .ride-card {
   border: 1px solid #e5e7eb;
   border-radius: 11px;
   padding: 18px;
+  background: white;
 }
 
 .ride-top {
@@ -300,12 +316,6 @@ footer {
   gap: 12px;
   color: #98a2b3;
   font-size: 12px;
-}
-
-.reset-btn {
-  color: #b91c1c;
-  background: transparent;
-  padding: 7px;
 }
 
 @media (max-width: 650px) {
