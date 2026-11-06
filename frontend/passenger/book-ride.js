@@ -16,6 +16,24 @@ let pickupMarker;
 let destinationMarker;
 let routeLine;
 
+/**
+ * Shorten a full Nominatim display_name to a concise "Place, City" label.
+ * e.g. "Vadapalani, Zone 10 Kodambakkam, Chennai, … Tamil Nadu, India"
+ *   → "Vadapalani, Chennai"
+ */
+function shortenLocation(raw) {
+    if (!raw) return raw;
+    const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
+    if (parts.length <= 2) return raw;
+    const first = parts[0];
+    const city = parts.slice(1).find(p =>
+        !/^\d/.test(p) &&
+        p.toLowerCase() !== first.toLowerCase() &&
+        p.length <= 30
+    );
+    return city ? `${first}, ${city}` : first;
+}
+
 function initializeMap() {
     if (!window.L) {
         document.getElementById('routeMap').textContent =
@@ -80,11 +98,11 @@ function showSearchOnMap(result) {
     }).addTo(map);
 
     const pickupLabel = document.createElement('span');
-    pickupLabel.textContent = `Pickup: ${result.pickup_location}`;
+    pickupLabel.textContent = `Pickup: ${shortenLocation(result.pickup_location)}`;
     pickupMarker.bindTooltip(pickupLabel);
 
     const destinationLabel = document.createElement('span');
-    destinationLabel.textContent = `Destination: ${result.destination}`;
+    destinationLabel.textContent = `Destination: ${shortenLocation(result.destination)}`;
     destinationMarker.bindTooltip(destinationLabel);
 
     routeLine = L.polyline([pickup, destination], {
@@ -95,7 +113,7 @@ function showSearchOnMap(result) {
 
     map.fitBounds(routeLine.getBounds().pad(0.15), { maxZoom: 14 });
     distanceSummary.textContent =
-        `Pickup: ${result.pickup_location}. Destination: ${result.destination}. ` +
+        `Pickup: ${shortenLocation(result.pickup_location)}. Destination: ${shortenLocation(result.destination)}. ` +
         `Straight-line distance: ${result.distance_km} km; road distance may be longer.`;
 }
 
@@ -160,10 +178,11 @@ function renderCabs(vehicles, distanceKm) {
         rate.className = 'cab-rate';
         rate.textContent = `${money.format(vehicle.base_fare)} base + ${money.format(vehicle.per_km_rate)} per km`;
 
+        const scheduledVal = document.getElementById('scheduledFor')?.value;
         const bookButton = document.createElement('button');
         bookButton.className = 'primary-button book-cab-button';
         bookButton.type = 'button';
-        bookButton.textContent = 'Book this cab';
+        bookButton.textContent = scheduledVal ? 'Schedule this cab' : 'Book this cab';
         bookButton.addEventListener('click', () => bookCab(vehicle.vehicle_id, bookButton));
 
         card.append(header, details, rate, bookButton);
@@ -179,13 +198,18 @@ async function bookCab(vehicleId, button) {
         return;
     }
 
-    if (!window.confirm('Book this cab for the displayed pickup and destination?')) {
+    const formData = new FormData(rideSearchForm);
+    const scheduledFor = formData.get('scheduled_for') ? formData.get('scheduled_for').trim() : '';
+    const confirmMessage = scheduledFor
+        ? `Schedule this cab for ${new Date(scheduledFor).toLocaleString()}?`
+        : 'Book this cab for the displayed pickup and destination?';
+
+    if (!window.confirm(confirmMessage)) {
         return;
     }
 
-    const formData = new FormData(rideSearchForm);
     button.disabled = true;
-    button.textContent = 'Booking…';
+    button.textContent = scheduledFor ? 'Scheduling…' : 'Booking…';
 
     try {
         const result = await passengerApi('/api/passenger/bookings', {
@@ -193,19 +217,24 @@ async function bookCab(vehicleId, button) {
             body: {
                 vehicle_id: vehicleId,
                 pickup_location: formData.get('pickup_location').trim(),
-                destination: formData.get('destination').trim()
+                destination: formData.get('destination').trim(),
+                scheduled_for: scheduledFor || null
             }
         });
 
-        showMessage(`Cab booked. Trip #${result.trip_id} is assigned to ${result.driver_name}. Opening your active trip…`);
+        const successText = result.scheduled_for
+            ? `Cab scheduled! Trip #${result.trip_id} reserved with ${result.driver_name} for ${new Date(result.scheduled_for).toLocaleString()}. Opening your active trips…`
+            : `Cab booked. Trip #${result.trip_id} is assigned to ${result.driver_name}. Opening your active trip…`;
+
+        showMessage(successText);
         window.setTimeout(() => {
             location.assign('/passenger/active-trip.html');
-        }, 900);
+        }, 1100);
     } catch (error) {
         console.error('Cab booking failed:', error);
         showMessage(error.message || 'Unable to book this cab. Please try again.', true);
         button.disabled = false;
-        button.textContent = 'Book this cab';
+        button.textContent = scheduledFor ? 'Schedule this cab' : 'Book this cab';
     }
 }
 
@@ -247,7 +276,7 @@ rideSearchForm.addEventListener('submit', async event => {
         showSearchOnMap(result);
         renderCabs(result.vehicles, result.distance_km);
         resultsDescription.textContent =
-            `${result.pickup_location} to ${result.destination} · ${result.distance_km} km straight-line`;
+            `${shortenLocation(result.pickup_location)} to ${shortenLocation(result.destination)} · ${result.distance_km} km straight-line`;
 
         if (result.vehicles.length) {
             showMessage('Fares are estimates based on the active fare rules. No cab has been booked.');
@@ -264,5 +293,22 @@ rideSearchForm.addEventListener('submit', async event => {
         searchButton.textContent = 'Search available cabs';
     }
 });
+
+const scheduledInput = document.getElementById('scheduledFor');
+if (scheduledInput) {
+    const pad = n => String(n).padStart(2, '0');
+    const updateMinScheduleTime = () => {
+        const now = new Date(Date.now() + 5 * 60 * 1000);
+        scheduledInput.min = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    };
+    updateMinScheduleTime();
+    scheduledInput.addEventListener('focus', updateMinScheduleTime);
+    scheduledInput.addEventListener('input', () => {
+        const isScheduled = Boolean(scheduledInput.value);
+        document.querySelectorAll('.book-cab-button').forEach(btn => {
+            btn.textContent = isScheduled ? 'Schedule this cab' : 'Book this cab';
+        });
+    });
+}
 
 initializeMap();

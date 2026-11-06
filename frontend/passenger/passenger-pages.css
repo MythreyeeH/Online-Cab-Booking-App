@@ -1,6 +1,13 @@
+/* passenger-pages.css — Page-specific styles for CabFlow Passenger pages
+   Covers: dashboard, active-trip, trip-history, profile, and shared widgets */
+
+/* ── Auth-pending visibility guard ───────────────────────────── */
+
 .auth-pending .page-content {
     visibility: hidden;
 }
+
+/* ── Passenger top-nav ───────────────────────────────────────── */
 
 .passenger-nav {
     display: flex;
@@ -27,6 +34,8 @@
     color: #187b56;
 }
 
+/* ── Page-level status message ───────────────────────────────── */
+
 .page-message {
     display: none;
     margin: 0 0 16px;
@@ -46,6 +55,18 @@
     background: #fff0f0;
     color: #b42332;
 }
+
+/* ── Auto-refresh status text (active-trip page) ─────────────── */
+
+.auto-refresh-status {
+    margin: 4px 0 0;
+    color: #2eb987;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+/* ── Dashboard summary cards ─────────────────────────────────── */
 
 .summary-grid {
     display: grid;
@@ -72,17 +93,86 @@
     font: 700 19px Manrope, sans-serif;
 }
 
+/* ── Primary and secondary link buttons ──────────────────────── */
+
+.primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    background: #187b56;
+    color: #fff;
+    font: 600 12px 'DM Sans', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.primary-link:hover {
+    background: #126744;
+    color: #fff;
+}
+
+.secondary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #c8d4de;
+    border-radius: 8px;
+    background: #fff;
+    color: #536174;
+    font: 600 11px 'DM Sans', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+
+.secondary-link:hover {
+    border-color: #a0aebb;
+    background: #f4f7fa;
+    color: #354254;
+}
+
+/* ── Trip list container ─────────────────────────────────────── */
+
 .trip-list {
     display: grid;
     gap: 12px;
     padding: 0 20px 20px;
 }
 
+/* ── Trip card ───────────────────────────────────────────────── */
+
 .trip-card {
     padding: 16px;
     border: 1px solid #e8edf2;
     border-radius: 10px;
     background: #fff;
+    position: relative;
+}
+
+/* ── Animated left-border pulse for IN_PROGRESS cards ───────── */
+
+@keyframes trip-pulse-border {
+
+    0%,
+    100% {
+        border-left-color: #2eb987;
+    }
+
+    50% {
+        border-left-color: #96e4c8;
+    }
+}
+
+.trip-card-pulse {
+    border-left: 4px solid #2eb987;
+    animation: trip-pulse-border 2s ease-in-out infinite;
 }
 
 .trip-card-header {
@@ -104,6 +194,16 @@
     font-size: 10px;
 }
 
+.trip-in-progress-note {
+    color: #187b56;
+    font-weight: 600;
+}
+
+.trip-scheduled-badge {
+    color: #0b5394;
+    font-weight: 600;
+}
+
 .trip-status {
     flex-shrink: 0;
     padding: 5px 8px;
@@ -112,6 +212,7 @@
     color: #a76a0b;
     font-size: 9px;
     font-weight: 700;
+    text-transform: uppercase;
 }
 
 .trip-status.in_progress,
@@ -148,6 +249,8 @@
     color: #465365;
 }
 
+/* ── Cancel and review action buttons ────────────────────────── */
+
 .cancel-button,
 .review-button {
     min-height: 35px;
@@ -167,6 +270,8 @@
     opacity: .6;
 }
 
+/* ── Review form ─────────────────────────────────────────────── */
+
 .review-form {
     display: grid;
     gap: 10px;
@@ -181,7 +286,6 @@
     font-weight: 600;
 }
 
-.review-form select,
 .review-form textarea {
     width: 100%;
     padding: 9px 10px;
@@ -190,9 +294,6 @@
     background: #fff;
     color: #354254;
     font: 12px 'DM Sans', sans-serif;
-}
-
-.review-form textarea {
     min-height: 75px;
     resize: vertical;
 }
@@ -204,6 +305,141 @@
     background: #e6f7ef;
     color: #187b56;
 }
+
+/* ── Star-rating widget ──────────────────────────────────────── */
+
+.star-rating {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.star-rating legend {
+    color: #465365;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.star-rating-stars {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    /* so CSS sibling selector can light earlier stars */
+    gap: 2px;
+}
+
+/* Hide the actual radio inputs */
+.star-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Star labels — default: empty/grey star */
+.star-label {
+    font-size: 26px;
+    color: #c8d4de;
+    cursor: pointer;
+    line-height: 1;
+    transition: color .1s;
+    user-select: none;
+}
+
+/* Highlight this star and all earlier stars when checked or hovered */
+.star-input:checked~.star-label,
+.star-rating-stars:hover .star-label:hover,
+.star-rating-stars:hover .star-label:hover~.star-label {
+    color: #f5a623;
+}
+
+/* Hover effect: highlight hovered star + all to its left */
+.star-label:hover,
+.star-label:hover~.star-label {
+    color: #f5a623;
+}
+
+/* Focus ring for keyboard navigation */
+.star-input:focus-visible+.star-label {
+    outline: 2px solid #2eb987;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* ── History filter row ──────────────────────────────────────── */
+
+.history-filter {
+    padding: 0 20px 14px;
+}
+
+.history-search {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 11px 8px 34px;
+    border: 1px solid #dce3ea;
+    border-radius: 8px;
+    background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23778293' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px 50% / 14px no-repeat;
+    color: #354254;
+    font: 12px 'DM Sans', sans-serif;
+}
+
+.history-search:focus {
+    border-color: #2eb987;
+    outline: 3px solid #2eb98724;
+    background-color: #fff;
+}
+
+.history-search::placeholder {
+    color: #a0aebb;
+}
+
+/* ── Recent trips grid (dashboard) ───────────────────────────── */
+
+.recent-trips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 0 20px 20px;
+}
+
+.recent-trip-mini {
+    padding: 14px;
+    border: 1px solid #e8edf2;
+    border-radius: 10px;
+    background: #fbfcfd;
+    display: grid;
+    gap: 6px;
+}
+
+.recent-trip-mini .trip-status {
+    justify-self: start;
+}
+
+.recent-trip-id {
+    margin: 0;
+    color: #273648;
+    font: 700 13px Manrope, sans-serif;
+}
+
+.recent-trip-route {
+    margin: 0;
+    color: #465365;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-trip-fare {
+    margin: 0;
+    color: #187b56;
+    font: 700 13px Manrope, sans-serif;
+}
+
+/* ── Profile form ────────────────────────────────────────────── */
 
 .profile-grid {
     display: grid;
@@ -255,6 +491,8 @@
     margin-left: 20px;
 }
 
+/* ── Profile info display items ──────────────────────────────── */
+
 .profile-item {
     padding: 13px;
     border: 1px solid #e8edf2;
@@ -274,11 +512,10 @@
     overflow-wrap: anywhere;
 }
 
-.secondary-link {
-    margin-top: 12px;
-}
+/* ── Responsive overrides ────────────────────────────────────── */
 
 @media (max-width: 650px) {
+
     .summary-grid,
     .profile-grid {
         grid-template-columns: 1fr;
@@ -292,5 +529,16 @@
 
     .trip-card {
         padding: 13px;
+    }
+
+    .recent-trips-list {
+        grid-template-columns: 1fr;
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .history-filter {
+        padding-right: 14px;
+        padding-left: 14px;
     }
 }

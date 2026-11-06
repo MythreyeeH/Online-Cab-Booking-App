@@ -19,7 +19,7 @@ async function passengerApi(path, options = {}) {
 
     if (response.status === 401) {
         const returnTo = location.pathname + location.search;
-        location.replace(`/passenger/account.html?return_to=${encodeURIComponent(returnTo)}`);
+        location.replace(`/auth.html?role=PASSENGER&return_to=${encodeURIComponent(returnTo)}`);
         throw new Error('Please sign in to continue');
     }
 
@@ -36,7 +36,7 @@ async function requirePassengerSession() {
 
         if (!result.authenticated) {
             const returnTo = location.pathname + location.search;
-            location.replace(`/passenger/account.html?return_to=${encodeURIComponent(returnTo)}`);
+            location.replace(`/auth.html?role=PASSENGER&return_to=${encodeURIComponent(returnTo)}`);
             return null;
         }
 
@@ -64,7 +64,7 @@ async function requirePassengerSession() {
 async function signOutPassenger() {
     try {
         await passengerApi('/api/passenger/logout', { method: 'POST' });
-        location.replace('/passenger/account.html');
+        location.replace('/auth.html?role=PASSENGER');
     } catch (error) {
         console.error('Unable to sign out:', error);
     }
