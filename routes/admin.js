@@ -289,6 +289,71 @@ async function deleteDriver(driverId) {
     });
 }
 
+async function updateDriverVerification(driverId, verificationStatus, ipAddress = 'unknown', adminUserId = null) {
+    const valid = ['APPROVED', 'REJECTED', 'PENDING'];
+    const status = String(verificationStatus || '').toUpperCase();
+    if (!valid.includes(status)) {
+        throw new Error('Invalid verification status');
+    }
+
+    return withTransaction(async connection => {
+        const [profiles] = await connection.query(
+            'SELECT user_id FROM driver_profiles WHERE driver_id = ?',
+            [driverId]
+        );
+        if (!profiles.length) throw new Error('Driver not found');
+
+        await connection.query(
+            'UPDATE driver_profiles SET verification_status = ? WHERE driver_id = ?',
+            [status, driverId]
+        );
+
+        await connection.query(`
+            INSERT INTO system_logs (user_id, action, description, ip_address, created_at)
+            VALUES (?, 'DRIVER_VERIFICATION', ?, ?, NOW())
+        `, [
+            adminUserId,
+            `Driver #${driverId} verification status updated to ${status}`,
+            ipAddress
+        ]);
+
+        return { message: `Driver verification updated to ${status}` };
+    });
+}
+
+async function updateDriverStatus(driverId, accountStatus, ipAddress = 'unknown', adminUserId = null) {
+    const valid = ['ACTIVE', 'BLOCKED', 'INACTIVE'];
+    const status = String(accountStatus || '').toUpperCase();
+    if (!valid.includes(status)) {
+        throw new Error('Invalid account status');
+    }
+
+    return withTransaction(async connection => {
+        const [profiles] = await connection.query(
+            'SELECT user_id FROM driver_profiles WHERE driver_id = ?',
+            [driverId]
+        );
+        if (!profiles.length) throw new Error('Driver not found');
+        const userId = profiles[0].user_id;
+
+        await connection.query(
+            'UPDATE users SET status = ? WHERE user_id = ?',
+            [status, userId]
+        );
+
+        await connection.query(`
+            INSERT INTO system_logs (user_id, action, description, ip_address, created_at)
+            VALUES (?, 'DRIVER_STATUS', ?, ?, NOW())
+        `, [
+            adminUserId,
+            `Driver #${driverId} (User #${userId}) account status updated to ${status}`,
+            ipAddress
+        ]);
+
+        return { message: `Driver account status updated to ${status}` };
+    });
+}
+
 // --------------------------------------------------
 // PASSENGER CRUD
 // --------------------------------------------------
@@ -522,6 +587,7 @@ async function listUsers() {
             u.email,
             u.mobile,
             u.role,
+            u.status,
             u.status AS account_status,
             CASE
                 WHEN u.role = 'DRIVER' THEN dp.driver_id
@@ -1077,6 +1143,15 @@ async function completeTrip(tripId) {
     });
 }
 
+async function listSystemLogs() {
+    const [rows] = await db.query(`
+        SELECT *
+        FROM system_logs
+        ORDER BY created_at DESC, log_id DESC
+    `);
+    return rows;
+}
+
 module.exports = {
     getSummary,
     getBookings,
@@ -1088,6 +1163,8 @@ module.exports = {
     createDriver,
     updateDriver,
     deleteDriver,
+    updateDriverVerification,
+    updateDriverStatus,
 
     listPassengers,
     createPassenger,
@@ -1122,5 +1199,7 @@ module.exports = {
     listOngoingTrips,
     getTripFormOptions,
     createTrip,
-    completeTrip
+    completeTrip,
+
+    listSystemLogs
 };

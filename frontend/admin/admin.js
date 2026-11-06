@@ -2,16 +2,15 @@ const API = '/api/admin';
 
 const features = [
     ['dashboard', '▦', 'Dashboard', null],
-    ['start-trip', '↗', 'Start/complete trip', 'Start/complete trip'],
-    ['user-details', '♙', 'View driver and passenger details', 'View driver and passenger details'],
+    ['start-trip', '↗', 'Start/complete trip', 'start-trip.html'],
+    ['user-details', '♙', 'View driver and passenger details', 'view-users.html'],
     ['drivers', '♧', 'Manage drivers', 'manage-drivers.html'],
     ['passengers', '♙', 'Manage passengers', 'manage-passengers.html'],
     ['vehicles', '▰', 'Manage vehicles', 'manage-vehicles.html'],
-    ['fares-areas', '₹', 'Manage fares and service areas', 'Manage fares and service areas'],
-    ['reports', '▤', 'View reports', 'View reports'],
+    ['fares-areas', '₹', 'Manage fares and service areas', 'fares-areas.html'],
+    ['reports', '▤', 'View reports', 'reports.html'],
     ['users', '⚑', 'Manage users', 'manage-users.html'],
-    ['profile', '◉', 'Manage own profile', 'Manage own profile'],
-    ['available-rides', '⌖', 'Search and view available rides', 'Search and view available rides']
+    ['system-activity', '▤', 'System Activity Monitoring', 'system-activity.html']
 ];
 
 let allBookings = [];
@@ -69,7 +68,7 @@ function renderNavigation() {
     });
 }
 async function fetchJson(url) {
-    const response = await fetch(url);
+    const response = await fetch(url, { credentials: 'same-origin' });
 
     if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);
@@ -168,6 +167,9 @@ async function initializeAdmin() {
 
     document.querySelectorAll('[data-admin-name]').forEach(element => {
       element.textContent = session.user.name;
+    });
+    document.querySelectorAll('[data-admin-role]').forEach(element => {
+      element.textContent = session.role === 'SUPER ADMIN' ? 'Super Administrator' : 'Administrator';
     });
     document.querySelectorAll('[data-admin-initials]').forEach(element => {
       element.textContent = session.user.name

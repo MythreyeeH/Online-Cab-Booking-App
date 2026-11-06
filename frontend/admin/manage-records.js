@@ -1,236 +1,31 @@
+// frontend/admin/manage-records.js
 const API = '/api/admin';
-
-const featureConfigs = {
-    drivers: {
-        title: 'Manage Drivers',
-        description: 'Create, update, and remove driver accounts.',
-        endpoint: 'drivers',
-        idField: 'driver_id',
-        formPage: 'driver-form.html',
-        columns: [
-            { key: 'driver_id', label: 'ID' },
-            { key: 'name', label: 'Name' },
-            { key: 'email', label: 'Email' },
-            { key: 'mobile', label: 'Mobile' },
-            { key: 'license_no', label: 'License' },
-            { key: 'verification_status', label: 'Verification' },
-            { key: 'account_status', label: 'Account' },
-            { key: 'rating', label: 'Rating' }
-        ]
-    },
-    passengers: {
-        title: 'Manage Passengers',
-        description: 'Create, update, and remove passenger accounts.',
-        endpoint: 'passengers',
-        idField: 'passenger_id',
-        formPage: 'passenger-form.html',
-        columns: [
-            { key: 'passenger_id', label: 'ID' },
-            { key: 'name', label: 'Name' },
-            { key: 'email', label: 'Email' },
-            { key: 'mobile', label: 'Mobile' },
-            { key: 'default_address', label: 'Address' },
-            { key: 'emergency_contact', label: 'Emergency' },
-            { key: 'account_status', label: 'Account' }
-        ]
-    },
-    vehicles: {
-        title: 'Manage Vehicles',
-        description: 'Assign vehicles to approved drivers.',
-        endpoint: 'vehicles',
-        idField: 'vehicle_id',
-        formPage: 'vehicle-form.html',
-        columns: [
-            { key: 'vehicle_id', label: 'ID' },
-            { key: 'vehicle_number', label: 'Number' },
-            { key: 'vehicle_type', label: 'Type' },
-            { key: 'model', label: 'Model' },
-            { key: 'capacity', label: 'Capacity' },
-            { key: 'driver_name', label: 'Driver' },
-            { key: 'status', label: 'Status' }
-        ]
-    },
-    users: {
-        title: 'Manage Users',
-        description: 'Update passenger and driver login accounts.',
-        endpoint: 'users',
-        idField: 'user_id',
-        formPage: 'user-form.html',
-        createDisabled: true,
-        columns: [
-            { key: 'user_id', label: 'ID' },
-            { key: 'name', label: 'Name' },
-            { key: 'email', label: 'Email' },
-            { key: 'mobile', label: 'Mobile' },
-            { key: 'role', label: 'Role' },
-            { key: 'account_status', label: 'Account' },
-            { key: 'profile_id', label: 'Profile ID' }
-        ]
-    }
-};
-
 const feature = document.body.dataset.feature;
-const config = featureConfigs[feature];
-const searchInput = document.getElementById('recordsSearch');
-const messageElement = document.getElementById('recordsMessage');
-const headElement = document.getElementById('recordsHead');
-const bodyElement = document.getElementById('recordsBody');
-const addButton = document.getElementById('addRecordBtn');
-
-let records = [];
-
-function safe(value) {
-    return String(value ?? '').replace(/[&<>"']/g, char => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    }[char]));
+const configs = {
+  drivers: { title:'Manage Drivers', description:'Approved and rejected drivers are shown here. Pending registrations are listed separately below.', endpoint:`${API}/drivers`, form:'driver-form.html', id:'driver_id', columns:[['driver_id','Driver ID'],['name','Name'],['email','Email'],['mobile','Mobile'],['license_no','License No.'],['license_expiry','License Expiry'],['verification_status','Verification'],['account_status','Account Status'],['rating','Rating']] },
+  passengers: { title:'Manage Passengers', description:'View registered passengers.', endpoint:`${API}/passengers`, form:'passenger-form.html', id:'passenger_id', columns:[['passenger_id','ID'],['name','Name'],['email','Email'],['mobile','Mobile'],['default_address','Address'],['account_status','Account Status']] },
+  vehicles: { title:'Manage Vehicles', description:'View and manage vehicles.', endpoint:`${API}/vehicles`, form:'vehicle-form.html', id:'vehicle_id', columns:[['vehicle_id','ID'],['vehicle_number','Vehicle'],['vehicle_type','Type'],['model','Model'],['capacity','Capacity'],['driver_name','Driver'],['status','Status']] },
+  users: { title:'Manage Users', description:'View and manage user accounts.', endpoint:`${API}/users`, form:'user-form.html', id:'user_id', columns:[['user_id','ID'],['name','Name'],['email','Email'],['mobile','Mobile'],['role','Role'],['status','Status']] }
+};
+const config=configs[feature];
+const $=id=>document.getElementById(id);
+let records=[];
+if (!config) { $('recordsMessage').textContent='Unknown record type.'; }
+else {
+  $('recordsTitle').textContent=config.title; $('recordsDescription').textContent=config.description;
+  $('addRecordBtn').addEventListener('click',()=>location.href=`./${config.form}`);
+  $('recordsSearch').addEventListener('input',render);
+  if(feature==='drivers') setupPendingTable();
+  load();
 }
-
-async function request(url, options = {}) {
-    const response = await fetch(url, {
-        credentials: 'same-origin',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...(options.headers || {})
-        }
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-        throw new Error(data.error || `Request failed (${response.status})`);
-    }
-
-    return data;
-}
-
-function searchableText(record) {
-    return config.columns
-        .map(column => record[column.key])
-        .concat([record[config.idField]])
-        .join(' ')
-        .toLowerCase();
-}
-
-function renderTable() {
-    const query = searchInput.value.trim().toLowerCase();
-    const filtered = records.filter(record => searchableText(record).includes(query));
-
-    headElement.innerHTML = `
-        <tr>
-            ${config.columns.map(column => `<th>${safe(column.label)}</th>`).join('')}
-            <th>Actions</th>
-        </tr>
-    `;
-
-    if (!filtered.length) {
-        bodyElement.innerHTML = `
-            <tr>
-                <td class="records-empty" colspan="${config.columns.length + 1}">
-                    No records found.
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    bodyElement.innerHTML = filtered.map(record => `
-        <tr>
-            ${config.columns.map(column => {
-                const value = record[column.key];
-                if (column.key === 'rating' && value != null) {
-                    return `<td>${safe(Number(value).toFixed(2))}</td>`;
-                }
-                return `<td>${safe(value ?? '—')}</td>`;
-            }).join('')}
-            <td class="records-row-actions">
-                <button type="button" class="records-button secondary" data-edit="${safe(record[config.idField])}">
-                    Edit
-                </button>
-                <button type="button" class="records-button danger" data-delete="${safe(record[config.idField])}">
-                    Delete
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-async function loadRecords() {
-    messageElement.textContent = '';
-    bodyElement.innerHTML = `
-        <tr>
-            <td class="records-empty" colspan="${config.columns.length + 1}">Loading...</td>
-        </tr>
-    `;
-
-    records = await request(`${API}/${config.endpoint}`);
-    renderTable();
-}
-
-async function deleteRecord(id) {
-    if (!window.confirm(`Delete this ${feature.slice(0, -1)} record?`)) {
-        return;
-    }
-
-    try {
-        await request(`${API}/${config.endpoint}/${id}`, { method: 'DELETE' });
-        messageElement.textContent = 'Record deleted successfully.';
-        await loadRecords();
-    } catch (error) {
-        messageElement.textContent = error.message;
-    }
-}
-
-function initialise() {
-    if (!config) {
-        document.getElementById('recordsTitle').textContent = 'Unknown page';
-        messageElement.textContent = 'This manage page is not configured.';
-        return;
-    }
-
-    document.getElementById('recordsTitle').textContent = config.title;
-    document.getElementById('recordsDescription').textContent = config.description;
-    document.title = `${config.title} | Cab Booking Admin`;
-
-    if (config.createDisabled) {
-        addButton.style.display = 'none';
-    } else {
-        addButton.textContent = `Add ${config.title.replace('Manage ', '').replace(/s$/, '')}`;
-        addButton.addEventListener('click', () => {
-            window.location.href = config.formPage;
-        });
-    }
-
-    searchInput.addEventListener('input', renderTable);
-
-    bodyElement.addEventListener('click', event => {
-        const editId = event.target.closest('[data-edit]')?.dataset.edit;
-        const deleteId = event.target.closest('[data-delete]')?.dataset.delete;
-
-        if (editId) {
-            window.location.href = `${config.formPage}?id=${encodeURIComponent(editId)}`;
-            return;
-        }
-
-        if (deleteId) {
-            deleteRecord(deleteId);
-        }
-    });
-
-    loadRecords().catch(error => {
-        messageElement.textContent = error.message;
-        bodyElement.innerHTML = `
-            <tr>
-                <td class="records-empty" colspan="${config.columns.length + 1}">
-                    Could not load records.
-                </td>
-            </tr>
-        `;
-    });
-}
-
-initialise();
+async function request(url,options={}) { const r=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options}); const data=await r.json().catch(()=>({})); if(!r.ok) throw new Error(data.error||`Request failed (${r.status})`); return data; }
+async function load(){ try { records=await request(config.endpoint); drawHeader(); render(); $('recordsMessage').textContent=`${records.length} records loaded.`; } catch(e){ $('recordsMessage').textContent=e.message; $('recordsMessage').style.color='#b91c1c'; $('recordsBody').innerHTML=`<tr><td class="records-empty">Unable to load records.</td></tr>`; } }
+function drawHeader(){ $('recordsHead').innerHTML=`<tr>${config.columns.map(c=>`<th>${esc(c[1])}</th>`).join('')}<th>Actions</th></tr>`; }
+function render(){ const q=$('recordsSearch').value.trim().toLowerCase(); let rows=records.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q)); if(feature==='drivers'){ const current=rows.filter(r=>r.verification_status!=='PENDING'); const pending=rows.filter(r=>r.verification_status==='PENDING'); drawRows('recordsBody',current,'current'); drawRows('pendingDriversBody',pending,'pending'); $('pendingCount').textContent=`${pending.length} pending`; } else drawRows('recordsBody',rows,'normal'); }
+function drawRows(targetId,rows,kind){ const target=$(targetId); if(!target)return; const colspan=config.columns.length+1; if(!rows.length){target.innerHTML=`<tr><td colspan="${colspan}" class="records-empty">No ${kind==='pending'?'pending ':''}records found.</td></tr>`;return;} target.innerHTML=rows.map(r=>`<tr>${config.columns.map(([key])=>`<td>${statusCell(key,r[key])}</td>`).join('')}<td><div class="record-actions">${feature==='drivers'?driverButtons(r,kind):`<button class="edit-button" data-action="edit" data-id="${esc(r[config.id])}">Edit</button><button class="delete-button" data-action="delete" data-id="${esc(r[config.id])}">Delete</button>`}</div></td></tr>`).join(''); }
+function driverButtons(r,kind){const id=esc(r.driver_id);let b=''; if(kind==='pending'){b+=`<button class="approve-button" data-action="approve" data-id="${id}">Approve</button><button class="reject-button" data-action="reject" data-id="${id}">Reject</button>`;} else {b+=`<button class="edit-button" data-action="edit" data-id="${id}">Edit</button>`;} b+=String(r.account_status).toUpperCase()==='BLOCKED'?`<button class="unblock-button" data-action="unblock" data-id="${id}">Unblock</button>`:`<button class="block-button" data-action="block" data-id="${id}">Block</button>`; if(kind!=='pending') b+=`<button class="delete-button" data-action="delete" data-id="${id}">Delete</button>`;return b;}
+function statusCell(k,v){if(v===null||v===undefined||v==='')return '—';if(['status','account_status','verification_status'].includes(k)){const x=String(v);return `<span class="record-status ${esc(x.toLowerCase())}">${esc(x)}</span>`;}return esc(v);}
+$('recordsBody').addEventListener('click',onAction); if($('pendingDriversBody'))$('pendingDriversBody').addEventListener('click',onAction);
+async function onAction(e){const b=e.target.closest('button[data-action]');if(!b)return;const {action,id}=b.dataset;try{if(action==='approve'||action==='reject'){if(!confirm(`${action==='approve'?'Approve':'Reject'} this driver?`))return;await request(`${API}/drivers/${id}/verification`,{method:'PUT',body:JSON.stringify({verification_status:action==='approve'?'APPROVED':'REJECTED'})});}else if(action==='block'||action==='unblock'){if(!confirm(`${action==='block'?'Block':'Unblock'} this driver?`))return;await request(`${API}/drivers/${id}/status`,{method:'PUT',body:JSON.stringify({status:action==='block'?'BLOCKED':'ACTIVE'})});}else if(action==='edit'){location.href=`./${config.form}?id=${encodeURIComponent(id)}`;return;}else if(action==='delete'){if(!confirm('Delete this record?'))return;await request(`${config.endpoint}/${id}`,{method:'DELETE'});} $('recordsMessage').textContent='Updated successfully.';await load();}catch(err){$('recordsMessage').textContent=err.message;$('recordsMessage').style.color='#b91c1c';}}
+function setupPendingTable(){const main=document.querySelector('.records-table-wrapper');const section=document.createElement('section');section.className='pending-drivers-section';section.innerHTML=`<div class="pending-heading"><div><h2>New driver registrations</h2><p>Drivers awaiting admin verification</p></div><span id="pendingCount" class="record-status pending">0 pending</span></div><div class="records-table-wrapper"><table class="records-table"><thead><tr>${config.columns.map(c=>`<th>${esc(c[1])}</th>`).join('')}<th>Actions</th></tr></thead><tbody id="pendingDriversBody"><tr><td class="records-empty">Loading...</td></tr></tbody></table></div>`;main.insertAdjacentElement('afterend',section);}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}

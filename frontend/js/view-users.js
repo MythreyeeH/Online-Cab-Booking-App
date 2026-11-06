@@ -143,8 +143,8 @@ async function loadUsers() {
 
     try {
         const [driverResponse, passengerResponse] = await Promise.all([
-            fetch(`${API}/drivers`),
-            fetch(`${API}/passengers`)
+            fetch(`${API}/drivers`, { credentials: 'same-origin' }),
+            fetch(`${API}/passengers`, { credentials: 'same-origin' })
         ]);
 
         if (!driverResponse.ok || !passengerResponse.ok) {

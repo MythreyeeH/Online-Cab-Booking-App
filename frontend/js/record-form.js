@@ -79,15 +79,14 @@ const formConfigs = {
             {
                 name: 'driver_id',
                 label: 'Assigned Driver',
-                type: 'driver-select',
-                required: true
+                type: 'driver-select'
             },
             {
                 name: 'status',
                 label: 'Vehicle Status',
                 type: 'select',
-                options: ['AVAILABLE', 'IN_USE', 'OFFLINE', 'INACTIVE'],
-                defaultValue: 'AVAILABLE'
+                options: ['ACTIVE', 'INACTIVE'],
+                defaultValue: 'ACTIVE'
             }
         ]
     },
@@ -150,6 +149,7 @@ function safe(value) {
 
 async function request(url, options = {}) {
     const response = await fetch(url, {
+        credentials: 'same-origin',
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -192,8 +192,8 @@ function renderFields() {
             `;
         } else if (field.type === 'driver-select') {
             control = `
-                <select id="${field.name}" name="${field.name}" ${requiredAttribute}>
-                    <option value="">Select a driver</option>
+                <select id="${field.name}" name="${field.name}">
+                    <option value="">Unassigned</option>
                 </select>
             `;
         } else {
@@ -291,7 +291,7 @@ form.addEventListener('submit', async event => {
 
     if (formType === 'vehicle') {
         data.capacity = Number(data.capacity);
-        data.driver_id = data.driver_id ? Number(data.driver_id) : null;
+        data.driver_id = data.driver_id || null;
     }
 
     if (formType === 'user' && !isEditing) {

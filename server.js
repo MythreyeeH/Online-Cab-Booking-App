@@ -165,14 +165,15 @@ const server = http.createServer(async (req, res) => {
             );
         }
 
+        let currentAdmin = null;
         if (pathname.startsWith('/api/admin/')) {
-            const currentUser = await auth.getRoleSession(req);
+            currentAdmin = await auth.getRoleSession(req);
 
-            if (!currentUser) {
+            if (!currentAdmin) {
                 return sendJson(res, 401, { error: 'Please sign in as an administrator' });
             }
 
-            if (!['ADMIN', 'SUPER ADMIN'].includes(currentUser.role)) {
+            if (!['ADMIN', 'SUPER ADMIN'].includes(currentAdmin.role)) {
                 return sendJson(res, 403, { error: 'Administrator access is required' });
             }
         }
@@ -478,6 +479,42 @@ const server = http.createServer(async (req, res) => {
             );
         }
 
+        let driverVerificationMatch = pathname.match(/^\/api\/admin\/drivers\/(\d+)\/verification$/);
+
+        if (driverVerificationMatch && req.method === 'PUT') {
+            const body = await readBody(req);
+            const adminUserId = currentAdmin ? currentAdmin.user_id : null;
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateDriverVerification(
+                    Number(driverVerificationMatch[1]),
+                    body.verification_status,
+                    req.socket.remoteAddress || 'unknown',
+                    adminUserId
+                )
+            );
+        }
+
+        let driverStatusMatch = pathname.match(/^\/api\/admin\/drivers\/(\d+)\/status$/);
+
+        if (driverStatusMatch && req.method === 'PUT') {
+            const body = await readBody(req);
+            const adminUserId = currentAdmin ? currentAdmin.user_id : null;
+
+            return sendJson(
+                res,
+                200,
+                await admin.updateDriverStatus(
+                    Number(driverStatusMatch[1]),
+                    body.status,
+                    req.socket.remoteAddress || 'unknown',
+                    adminUserId
+                )
+            );
+        }
+
         let match = pathname.match(/^\/api\/admin\/drivers\/(\d+)$/);
 
         if (match && req.method === 'PUT') {
@@ -728,7 +765,7 @@ const server = http.createServer(async (req, res) => {
 
             const days = Number(url.searchParams.get('days') || 30);
 
-            if (![7, 30].includes(days)) {
+            if (![7, 30, 90].includes(days)) {
                 return sendJson(res, 400, {
                     error: 'Invalid report period'
                 });
@@ -756,6 +793,18 @@ const server = http.createServer(async (req, res) => {
             }
 
             return sendJson(res, 200, result);
+        }
+
+        // ==========================================
+        // SYSTEM ACTIVITY MONITORING
+        // ==========================================
+
+        if (
+            req.method === 'GET' &&
+            pathname === '/api/admin/system-logs'
+        ) {
+            const logs = await admin.listSystemLogs();
+            return sendJson(res, 200, logs);
         }
 
                 // ==========================================

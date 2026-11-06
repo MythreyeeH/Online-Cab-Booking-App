@@ -16,7 +16,9 @@ async function loadSystemActivity() {
 
     try {
 
-        const response = await fetch('/api/admin/system-logs');
+        const response = await fetch('/api/admin/system-logs', {
+            credentials: 'same-origin'
+        });
 
         const logs = await response.json();
 
