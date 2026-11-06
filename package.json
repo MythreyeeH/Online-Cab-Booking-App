@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "reset-demo-passwords": "node scripts/reset-demo-passwords.js"
   },
   "dependencies": {
     "mysql2": "^3.14.0",

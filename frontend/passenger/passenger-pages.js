@@ -339,12 +339,44 @@ async function loadDashboard() {
     }
 }
 
-async function loadProfile(passenger) {
-    document.getElementById('profileName').textContent = passenger.name || 'Not provided';
-    document.getElementById('profileEmail').textContent = passenger.email || 'Not provided';
-    document.getElementById('profileMobile').textContent = passenger.mobile || 'Not provided';
-    document.getElementById('profileAddress').textContent = passenger.default_address || 'Not provided';
-    document.getElementById('profileEmergency').textContent = passenger.emergency_contact || 'Not provided';
+function loadProfile(passenger) {
+    const form = document.getElementById('profileForm');
+    form.elements.name.value = passenger.name || '';
+    form.elements.email.value = passenger.email || '';
+    form.elements.mobile.value = passenger.mobile || '';
+    form.elements.default_address.value = passenger.default_address || '';
+    form.elements.emergency_contact.value = passenger.emergency_contact || '';
+
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const submitButton = document.getElementById('saveProfileButton');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving…';
+        clearPageMessage();
+
+        try {
+            const formData = new FormData(form);
+            const result = await passengerApi('/api/passenger/profile', {
+                method: 'PUT',
+                body: Object.fromEntries(formData.entries())
+            });
+            form.elements.name.value = result.name;
+            form.elements.mobile.value = result.mobile;
+            form.elements.default_address.value = result.default_address || '';
+            form.elements.emergency_contact.value = result.emergency_contact || '';
+            document.querySelectorAll('[data-passenger-name]').forEach(element => {
+                element.textContent = result.name;
+            });
+            showPageMessage('Profile updated successfully.');
+        } catch (error) {
+            showPageMessage(error.message || 'Unable to save your profile.', true);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Save changes';
+        }
+    });
 }
 
 async function initializePassengerPage() {

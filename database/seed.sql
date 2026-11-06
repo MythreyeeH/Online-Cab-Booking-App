@@ -1,19 +1,20 @@
 USE cab_booking;
--- Demo-only records. Password values are placeholders; do not use them for real authentication.
+-- Demo accounts. After importing seed data, run: node scripts/reset-demo-passwords.js
+-- Default demo password after that script: Password1!
 -- 12 users are needed so that each profile table can have five distinct users plus ADMIN/SUPER ADMIN.
 INSERT INTO users (user_id,name,email,password,mobile,role,status) VALUES
-(1,'Aarav Kumar','aarav@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000001','PASSENGER','ACTIVE'),
-(2,'Diya Sharma','diya@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000002','PASSENGER','ACTIVE'),
-(3,'Ishaan Rao','ishaan@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000003','PASSENGER','ACTIVE'),
-(4,'Meera Iyer','meera@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000004','PASSENGER','ACTIVE'),
-(5,'Kabir Das','kabir@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000005','PASSENGER','ACTIVE'),
-(6,'Vikram Singh','vikram@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000006','DRIVER','ACTIVE'),
-(7,'Ananya Nair','ananya@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000007','DRIVER','ACTIVE'),
-(8,'Rahul Menon','rahul@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000008','DRIVER','ACTIVE'),
-(9,'Priya Shah','priya@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000009','DRIVER','ACTIVE'),
-(10,'Arjun Patel','arjun@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000010','DRIVER','ACTIVE'),
-(11,'Admin Demo','admin@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000011','ADMIN','ACTIVE'),
-(12,'Super Admin Demo','superadmin@example.com','DEMO_PASSWORD_NOT_FOR_LOGIN','9000000012','SUPER ADMIN','ACTIVE');
+(1,'Aarav Kumar','aarav@example.com','REPLACE_WITH_SCRYPT_HASH','9000000001','PASSENGER','ACTIVE'),
+(2,'Diya Sharma','diya@example.com','REPLACE_WITH_SCRYPT_HASH','9000000002','PASSENGER','ACTIVE'),
+(3,'Ishaan Rao','ishaan@example.com','REPLACE_WITH_SCRYPT_HASH','9000000003','PASSENGER','ACTIVE'),
+(4,'Meera Iyer','meera@example.com','REPLACE_WITH_SCRYPT_HASH','9000000004','PASSENGER','ACTIVE'),
+(5,'Kabir Das','kabir@example.com','REPLACE_WITH_SCRYPT_HASH','9000000005','PASSENGER','ACTIVE'),
+(6,'Vikram Singh','vikram@example.com','REPLACE_WITH_SCRYPT_HASH','9000000006','DRIVER','ACTIVE'),
+(7,'Ananya Nair','ananya@example.com','REPLACE_WITH_SCRYPT_HASH','9000000007','DRIVER','ACTIVE'),
+(8,'Rahul Menon','rahul@example.com','REPLACE_WITH_SCRYPT_HASH','9000000008','DRIVER','ACTIVE'),
+(9,'Priya Shah','priya@example.com','REPLACE_WITH_SCRYPT_HASH','9000000009','DRIVER','ACTIVE'),
+(10,'Arjun Patel','arjun@example.com','REPLACE_WITH_SCRYPT_HASH','9000000010','DRIVER','ACTIVE'),
+(11,'Admin Demo','admin@example.com','REPLACE_WITH_SCRYPT_HASH','9000000011','ADMIN','ACTIVE'),
+(12,'Super Admin Demo','superadmin@example.com','REPLACE_WITH_SCRYPT_HASH','9000000012','SUPER ADMIN','ACTIVE');
 
 INSERT INTO passenger_profiles (passenger_id,user_id,default_address,emergency_contact) VALUES
 (1,1,'Adyar, Chennai','9111111111'),(2,2,'Velachery, Chennai','9222222222'),

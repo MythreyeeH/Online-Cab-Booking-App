@@ -73,6 +73,10 @@ async function submitAccountForm(form, endpoint) {
 loginTab.addEventListener('click', () => showAccountMode('login'));
 registerTab.addEventListener('click', () => showAccountMode('register'));
 
+if (new URLSearchParams(location.search).get('mode') === 'register') {
+    showAccountMode('register');
+}
+
 loginForm.addEventListener('submit', event => {
     event.preventDefault();
     if (loginForm.reportValidity()) {

@@ -442,35 +442,57 @@ async function getVehicleDrivers() {
 }
 
 async function createVehicle(data) {
+    const driverId = Number(required(data.driver_id, 'Assigned driver'));
+    const status = data.status || 'AVAILABLE';
+
+    if (!Number.isSafeInteger(driverId) || driverId <= 0) {
+        throw new Error('Assigned driver is required');
+    }
+
+    if (!['AVAILABLE', 'IN_USE', 'OFFLINE', 'INACTIVE'].includes(status)) {
+        throw new Error('Invalid vehicle status');
+    }
+
     const [result] = await db.query(`
         INSERT INTO vehicles
             (driver_id, vehicle_number, vehicle_type, model, capacity, status)
         VALUES (?, ?, ?, ?, ?, ?)
     `, [
-        data.driver_id || null,
+        driverId,
         required(data.vehicle_number, 'Vehicle number'),
         required(data.vehicle_type, 'Vehicle type'),
         required(data.model, 'Model'),
         Number(required(data.capacity, 'Capacity')),
-        data.status || 'ACTIVE'
+        status
     ]);
 
     return { vehicle_id: result.insertId };
 }
 
 async function updateVehicle(vehicleId, data) {
+    const driverId = Number(required(data.driver_id, 'Assigned driver'));
+    const status = data.status || 'AVAILABLE';
+
+    if (!Number.isSafeInteger(driverId) || driverId <= 0) {
+        throw new Error('Assigned driver is required');
+    }
+
+    if (!['AVAILABLE', 'IN_USE', 'OFFLINE', 'INACTIVE'].includes(status)) {
+        throw new Error('Invalid vehicle status');
+    }
+
     await db.query(`
         UPDATE vehicles
         SET driver_id = ?, vehicle_number = ?, vehicle_type = ?,
             model = ?, capacity = ?, status = ?
         WHERE vehicle_id = ?
     `, [
-        data.driver_id || null,
+        driverId,
         required(data.vehicle_number, 'Vehicle number'),
         required(data.vehicle_type, 'Vehicle type'),
         required(data.model, 'Model'),
         Number(required(data.capacity, 'Capacity')),
-        data.status || 'ACTIVE',
+        status,
         vehicleId
     ]);
 
@@ -806,6 +828,255 @@ async function getPassengerReport(days = 30) {
     return rows;
 }
 
+// --------------------------------------------------
+// START / COMPLETE TRIP (ADMIN)
+// --------------------------------------------------
+
+async function listOngoingTrips() {
+    const [rows] = await db.query(`
+        SELECT
+            t.trip_id,
+            rr.request_id,
+            pu.name AS passenger_name,
+            du.name AS driver_name,
+            rr.pickup_location,
+            rr.destination,
+            COALESCE(t.fare, rr.estimated_fare) AS fare,
+            t.distance_km,
+            t.trip_status AS status,
+            t.start_time,
+            v.vehicle_number,
+            v.vehicle_type
+        FROM trips t
+        JOIN ride_requests rr ON rr.request_id = t.request_id
+        JOIN passenger_profiles pp ON pp.passenger_id = t.passenger_id
+        JOIN users pu ON pu.user_id = pp.user_id
+        JOIN driver_profiles dp ON dp.driver_id = t.driver_id
+        JOIN users du ON du.user_id = dp.user_id
+        JOIN vehicles v ON v.vehicle_id = t.vehicle_id
+        WHERE t.trip_status IN ('ASSIGNED', 'IN_PROGRESS')
+        ORDER BY FIELD(t.trip_status, 'IN_PROGRESS', 'ASSIGNED'), t.trip_id DESC
+    `);
+
+    return rows.map(row => ({
+        ...row,
+        fare: row.fare == null ? null : Number(row.fare),
+        distance_km: row.distance_km == null ? null : Number(row.distance_km)
+    }));
+}
+
+async function getTripFormOptions() {
+    const [passengers] = await db.query(`
+        SELECT pp.passenger_id, u.name, u.email
+        FROM passenger_profiles pp
+        JOIN users u ON u.user_id = pp.user_id
+        WHERE u.status = 'ACTIVE'
+        ORDER BY u.name
+    `);
+
+    const [drivers] = await db.query(`
+        SELECT
+            dp.driver_id,
+            u.name,
+            v.vehicle_id,
+            v.vehicle_number,
+            v.vehicle_type,
+            v.status AS vehicle_status
+        FROM driver_profiles dp
+        JOIN users u ON u.user_id = dp.user_id
+        LEFT JOIN vehicles v
+            ON v.driver_id = dp.driver_id
+            AND v.status IN ('AVAILABLE', 'OFFLINE')
+        WHERE dp.verification_status = 'APPROVED'
+            AND u.status = 'ACTIVE'
+        ORDER BY u.name, v.vehicle_id
+    `);
+
+    return { passengers, drivers };
+}
+
+async function createTrip(data) {
+    const passengerId = Number(data.passenger_id);
+    const driverId = Number(data.driver_id);
+    const vehicleId = Number(data.vehicle_id);
+    const pickupLocation = required(data.pickup_location, 'Pickup location');
+    const destination = required(data.destination, 'Destination');
+    const estimatedFare = Number(data.estimated_fare);
+    const distanceKm = data.distance_km == null || data.distance_km === ''
+        ? null
+        : Number(data.distance_km);
+
+    if (!Number.isSafeInteger(passengerId) || passengerId <= 0) {
+        throw new Error('Select a valid passenger');
+    }
+
+    if (!Number.isSafeInteger(driverId) || driverId <= 0) {
+        throw new Error('Select a valid driver');
+    }
+
+    if (!Number.isSafeInteger(vehicleId) || vehicleId <= 0) {
+        throw new Error('Select a valid vehicle');
+    }
+
+    if (!Number.isFinite(estimatedFare) || estimatedFare < 0) {
+        throw new Error('Estimated fare must be a valid non-negative number');
+    }
+
+    if (distanceKm != null && (!Number.isFinite(distanceKm) || distanceKm < 0)) {
+        throw new Error('Distance must be a valid non-negative number');
+    }
+
+    return withTransaction(async connection => {
+        const [vehicles] = await connection.query(`
+            SELECT vehicle_id, driver_id, status
+            FROM vehicles
+            WHERE vehicle_id = ? AND driver_id = ?
+            FOR UPDATE
+        `, [vehicleId, driverId]);
+
+        if (!vehicles.length) {
+            throw new Error('Vehicle is not linked to the selected driver');
+        }
+
+        if (!['AVAILABLE', 'OFFLINE'].includes(vehicles[0].status)) {
+            throw new Error('Selected vehicle is not available');
+        }
+
+        const [activeTrips] = await connection.query(`
+            SELECT trip_id
+            FROM trips
+            WHERE vehicle_id = ?
+                AND trip_status IN ('ASSIGNED', 'IN_PROGRESS')
+            LIMIT 1
+            FOR UPDATE
+        `, [vehicleId]);
+
+        if (activeTrips.length) {
+            throw new Error('Selected vehicle already has an active trip');
+        }
+
+        const [requestResult] = await connection.query(`
+            INSERT INTO ride_requests
+                (passenger_id, pickup_location, destination, estimated_fare, status)
+            VALUES (?, ?, ?, ?, 'ACCEPTED')
+        `, [passengerId, pickupLocation, destination, estimatedFare]);
+
+        const [tripResult] = await connection.query(`
+            INSERT INTO trips
+                (request_id, passenger_id, driver_id, vehicle_id,
+                    distance_km, fare, trip_status)
+            VALUES (?, ?, ?, ?, ?, ?, 'ASSIGNED')
+        `, [
+            requestResult.insertId,
+            passengerId,
+            driverId,
+            vehicleId,
+            distanceKm,
+            estimatedFare
+        ]);
+
+        await connection.query(`
+            UPDATE vehicles
+            SET status = 'IN_USE'
+            WHERE vehicle_id = ?
+        `, [vehicleId]);
+
+        await connection.query(`
+            INSERT INTO payments
+                (trip_id, passenger_id, amount, payment_method, payment_status)
+            VALUES (?, ?, ?, 'CASH', 'PENDING')
+        `, [tripResult.insertId, passengerId, estimatedFare]);
+
+        return {
+            trip_id: tripResult.insertId,
+            request_id: requestResult.insertId,
+            message: 'Trip created successfully'
+        };
+    });
+}
+
+async function completeTrip(tripId) {
+    return withTransaction(async connection => {
+        const [rows] = await connection.query(`
+            SELECT
+                t.trip_id,
+                t.request_id,
+                t.vehicle_id,
+                t.passenger_id,
+                t.trip_status,
+                COALESCE(t.fare, rr.estimated_fare) AS fare
+            FROM trips t
+            JOIN ride_requests rr ON rr.request_id = t.request_id
+            WHERE t.trip_id = ?
+            FOR UPDATE
+        `, [tripId]);
+
+        if (!rows.length) {
+            throw new Error('Trip not found');
+        }
+
+        const trip = rows[0];
+
+        if (!['ASSIGNED', 'IN_PROGRESS'].includes(trip.trip_status)) {
+            throw new Error('Only assigned or in-progress trips can be completed');
+        }
+
+        const fare = Number(trip.fare || 0);
+
+        await connection.query(`
+            UPDATE trips
+            SET trip_status = 'COMPLETED',
+                start_time = COALESCE(start_time, NOW()),
+                end_time = NOW(),
+                fare = ?
+            WHERE trip_id = ?
+        `, [fare, tripId]);
+
+        await connection.query(`
+            UPDATE ride_requests
+            SET status = 'COMPLETED'
+            WHERE request_id = ?
+        `, [trip.request_id]);
+
+        await connection.query(`
+            UPDATE vehicles AS v
+            SET status = 'AVAILABLE'
+            WHERE v.vehicle_id = ?
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM trips active_trip
+                    WHERE active_trip.vehicle_id = v.vehicle_id
+                        AND active_trip.trip_status IN ('ASSIGNED', 'IN_PROGRESS')
+                )
+        `, [trip.vehicle_id]);
+
+        const [payments] = await connection.query(`
+            SELECT payment_id FROM payments WHERE trip_id = ? LIMIT 1 FOR UPDATE
+        `, [tripId]);
+
+        if (payments.length) {
+            await connection.query(`
+                UPDATE payments
+                SET amount = ?, payment_status = 'PAID', paid_at = NOW()
+                WHERE trip_id = ?
+            `, [fare, tripId]);
+        } else {
+            await connection.query(`
+                INSERT INTO payments
+                    (trip_id, passenger_id, amount, payment_method, payment_status, paid_at)
+                VALUES (?, ?, ?, 'CASH', 'PAID', NOW())
+            `, [tripId, trip.passenger_id, fare]);
+        }
+
+        return {
+            trip_id: tripId,
+            status: 'COMPLETED',
+            fare,
+            message: 'Trip completed successfully'
+        };
+    });
+}
+
 module.exports = {
     getSummary,
     getBookings,
@@ -846,5 +1117,10 @@ module.exports = {
     getRevenueReport,
     getTripReport,
     getDriverReport,
-    getPassengerReport
+    getPassengerReport,
+
+    listOngoingTrips,
+    getTripFormOptions,
+    createTrip,
+    completeTrip
 };

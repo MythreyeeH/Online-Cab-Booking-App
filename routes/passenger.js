@@ -389,6 +389,12 @@ async function createBooking(passengerId, data) {
             WHERE vehicle_id = ?
         `, [vehicleId]);
 
+        await connection.query(`
+            INSERT INTO payments
+                (trip_id, passenger_id, amount, payment_method, payment_status)
+            VALUES (?, ?, ?, 'CASH', 'PENDING')
+        `, [tripResult.insertId, passengerId, fare]);
+
         await connection.commit();
 
         return {
@@ -549,6 +555,100 @@ async function listTripHistory(passengerId, userId) {
     }));
 }
 
+async function updateProfile(passengerId, userId, data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        const error = new Error('Provide valid profile details');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const name = required(data.name, 'Name');
+    const mobile = required(data.mobile, 'Mobile number');
+    const defaultAddress = data.default_address == null
+        ? ''
+        : String(data.default_address).trim();
+    const emergencyContact = data.emergency_contact == null
+        ? ''
+        : String(data.emergency_contact).trim();
+
+    if (name.length > 100) {
+        const error = new Error('Name must be 100 characters or fewer');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (mobile.length > 20) {
+        const error = new Error('Mobile number must be 20 characters or fewer');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (defaultAddress.length > 255) {
+        const error = new Error('Default address must be 255 characters or fewer');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (emergencyContact.length > 20) {
+        const error = new Error('Emergency contact must be 20 characters or fewer');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const [accounts] = await connection.query(`
+            SELECT u.user_id
+            FROM users u
+            JOIN passenger_profiles pp ON pp.user_id = u.user_id
+            WHERE u.user_id = ?
+                AND pp.passenger_id = ?
+                AND u.role = 'PASSENGER'
+                AND u.status = 'ACTIVE'
+            FOR UPDATE
+        `, [userId, passengerId]);
+
+        if (!accounts.length) {
+            const error = new Error('Passenger profile not found');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        await connection.query(`
+            UPDATE users
+            SET name = ?, mobile = ?
+            WHERE user_id = ? AND role = 'PASSENGER' AND status = 'ACTIVE'
+        `, [name, mobile, userId]);
+
+        await connection.query(`
+            UPDATE passenger_profiles
+            SET default_address = ?, emergency_contact = ?
+            WHERE passenger_id = ? AND user_id = ?
+        `, [
+            defaultAddress || null,
+            emergencyContact || null,
+            passengerId,
+            userId
+        ]);
+
+        await connection.commit();
+        return {
+            name,
+            mobile,
+            default_address: defaultAddress || null,
+            emergency_contact: emergencyContact || null
+        };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
 async function reviewTrip(passengerId, userId, tripId, data) {
     const rating = Number(data.rating);
     const comment = data.comment == null ? '' : String(data.comment).trim();
@@ -648,5 +748,6 @@ module.exports = {
     listActiveTrips,
     cancelBooking,
     listTripHistory,
+    updateProfile,
     reviewTrip
 };
