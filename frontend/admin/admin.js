@@ -156,9 +156,47 @@ async function refreshDashboard() {
     document.getElementById('bookingCountLabel').textContent = 'Connection error';
   } finally { button.disabled = false; button.textContent = '↻ Refresh data'; }
 }
-renderNavigation();
-initMap();
-document.getElementById('bookingSearch').addEventListener('input', renderBookings);
-document.getElementById('statusFilter').addEventListener('change', renderBookings);
-document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
-refreshDashboard();
+async function initializeAdmin() {
+  try {
+    const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+    const session = await response.json();
+
+    if (!session.authenticated || !['ADMIN', 'SUPER ADMIN'].includes(session.role)) {
+      location.replace('/auth.html?role=ADMIN');
+      return;
+    }
+
+    document.querySelectorAll('[data-admin-name]').forEach(element => {
+      element.textContent = session.user.name;
+    });
+    document.querySelectorAll('[data-admin-initials]').forEach(element => {
+      element.textContent = session.user.name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join('')
+        .toUpperCase();
+    });
+
+    renderNavigation();
+    initMap();
+    document.getElementById('bookingSearch').addEventListener('input', renderBookings);
+    document.getElementById('statusFilter').addEventListener('change', renderBookings);
+    document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+        location.replace('/auth.html');
+      } catch (error) {
+        console.error('Unable to sign out:', error);
+      }
+    });
+    refreshDashboard();
+  } catch (error) {
+    console.error('Unable to verify administrator session:', error);
+    document.getElementById('bookingRows').innerHTML =
+      '<tr><td colspan="6" class="empty-state">Could not verify your account. Check the server connection and refresh.</td></tr>';
+  }
+}
+
+initializeAdmin();

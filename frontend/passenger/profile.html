@@ -36,18 +36,36 @@
 
         <section class="panel">
             <div class="panel-heading">
-                <div><h2>Passenger details</h2><p>Account details are loaded from your signed-in profile.</p></div>
+                <div><h2>Passenger details</h2><p>Update your details saved to your passenger account.</p></div>
             </div>
-            <dl class="profile-grid">
-                <div class="profile-item"><dt>Name</dt><dd id="profileName">Loading…</dd></div>
-                <div class="profile-item"><dt>Email</dt><dd id="profileEmail">Loading…</dd></div>
-                <div class="profile-item"><dt>Mobile number</dt><dd id="profileMobile">Loading…</dd></div>
-                <div class="profile-item"><dt>Default address</dt><dd id="profileAddress">Loading…</dd></div>
-                <div class="profile-item"><dt>Emergency contact</dt><dd id="profileEmergency">Loading…</dd></div>
-            </dl>
+            <form id="profileForm" class="profile-form">
+                <div class="profile-grid">
+                    <div class="form-field">
+                        <label for="profileName">Full name</label>
+                        <input id="profileName" name="name" type="text" maxlength="100" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="profileEmail">Email address</label>
+                        <input id="profileEmail" name="email" type="email" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label for="profileMobile">Mobile number</label>
+                        <input id="profileMobile" name="mobile" type="tel" maxlength="20" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="profileAddress">Default address</label>
+                        <input id="profileAddress" name="default_address" type="text" maxlength="255">
+                    </div>
+                    <div class="form-field">
+                        <label for="profileEmergency">Emergency contact</label>
+                        <input id="profileEmergency" name="emergency_contact" type="tel" maxlength="20">
+                    </div>
+                </div>
+                <button class="primary-button" id="saveProfileButton" type="submit">Save changes</button>
+            </form>
         </section>
 
-        <footer>CabFlow Passenger · Profile editing is not included in this feature</footer>
+        <footer>CabFlow Passenger · Profile details are saved to your account</footer>
     </main>
 
     <script src="/passenger/passenger-common.js"></script>

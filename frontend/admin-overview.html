@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cab Booking Admin Overview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f3f5f9;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.25rem max(1.25rem, calc((100% - 1100px) / 2));
+      background: #15233b;
+      color: #fff;
+    }
+    h1 { margin: 0; font-size: 1.25rem; }
+    main { width: min(1100px, calc(100% - 2rem)); margin: 2rem auto; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .toolbar p { color: #68748a; }
+    button {
+      border: 0;
+      border-radius: .5rem;
+      padding: .65rem 1rem;
+      background: #4169e1;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .65; cursor: wait; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .card, .bookings { border-radius: .75rem; background: #fff; box-shadow: 0 2px 12px #1720330d; }
+    .card { padding: 1.25rem; }
+    .card h2 { margin: 0; color: #68748a; font-size: .9rem; font-weight: 600; }
+    .card p { margin: .5rem 0 0; font-size: 1.75rem; font-weight: 700; }
+    .bookings { overflow: hidden; }
+    .bookings h2 { margin: 0; padding: 1.25rem; font-size: 1.1rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: .85rem 1.25rem; border-top: 1px solid #e8ebf1; white-space: nowrap; }
+    th { color: #68748a; font-size: .8rem; text-transform: uppercase; }
+    .notice { margin: 1rem 0; color: #68748a; }
+    .notice.error { color: #a32626; }
+    @media (max-width: 600px) {
+      header { padding: 1rem; }
+      main { margin: 1rem auto; }
+      .toolbar { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Cab Booking Admin</h1></header>
+  <main>
+    <div class="toolbar">
+      <div>
+        <h2>Overview</h2>
+        <p>Current booking and fleet activity</p>
+      </div>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+    <p id="notice" class="notice" role="status" aria-live="polite">Loading dashboard…</p>
+    <section class="metrics" aria-label="Booking summary">
+      <article class="card"><h2>Passengers</h2><p id="passengers">—</p></article>
+      <article class="card"><h2>Approved drivers</h2><p id="drivers">—</p></article>
+      <article class="card"><h2>Active trips</h2><p id="activeTrips">—</p></article>
+      <article class="card"><h2>Paid revenue</h2><p id="revenue">—</p></article>
+    </section>
+    <section class="bookings" aria-labelledby="bookings-heading">
+      <h2 id="bookings-heading">Recent bookings</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Trip</th><th>Passenger</th><th>Driver</th><th>Route</th><th>Status</th><th>Fare</th>
+            </tr>
+          </thead>
+          <tbody id="booking-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    const notice = document.getElementById('notice');
+    const refreshButton = document.getElementById('refresh');
+    const bookingRows = document.getElementById('booking-rows');
+    const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
+
+    async function getJson(endpoint) {
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error(`${endpoint} returned HTTP ${response.status}`);
+      return response.json();
+    }
+
+    function addCell(row, value) {
+      const cell = document.createElement('td');
+      cell.textContent = value == null || value === '' ? '—' : String(value);
+      row.appendChild(cell);
+    }
+
+    async function loadDashboard() {
+      refreshButton.disabled = true;
+      notice.className = 'notice';
+      notice.textContent = 'Loading dashboard…';
+      try {
+        const session = await getJson('/api/auth/session');
+        if (!session.authenticated || !['ADMIN', 'SUPER ADMIN'].includes(session.role)) {
+          location.replace('/auth.html?role=ADMIN');
+          return;
+        }
+
+        const [summary, bookings] = await Promise.all([
+          getJson('/api/admin/summary'),
+          getJson('/api/admin/bookings')
+        ]);
+        for (const key of ['passengers', 'drivers', 'activeTrips']) {
+          document.getElementById(key).textContent = String(summary[key] ?? 0);
+        }
+        document.getElementById('revenue').textContent = money.format(Number(summary.revenue) || 0);
+        bookingRows.replaceChildren();
+        for (const booking of bookings) {
+          const row = document.createElement('tr');
+          addCell(row, booking.trip_id);
+          addCell(row, booking.passenger_name);
+          addCell(row, booking.driver_name);
+          addCell(row, `${booking.pickup_location || '—'} → ${booking.destination || '—'}`);
+          addCell(row, booking.status);
+          addCell(row, booking.fare == null ? null : money.format(Number(booking.fare) || 0));
+          bookingRows.appendChild(row);
+        }
+        notice.textContent = bookings.length ? '' : 'Dashboard loaded. There are no bookings yet.';
+      } catch (error) {
+        console.error('Unable to load dashboard:', error);
+        notice.className = 'notice error';
+        notice.textContent = 'Unable to load dashboard data. Check the backend configuration and MySQL connection, then refresh.';
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    refreshButton.addEventListener('click', loadDashboard);
+    loadDashboard();
+  </script>
+</body>
+</html>

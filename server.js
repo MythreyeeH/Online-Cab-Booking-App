@@ -8,6 +8,8 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const admin = require('./routes/admin');
 const passenger = require('./routes/passenger');
 const passengerAuth = require('./routes/passenger-auth');
+const auth = require('./routes/auth');
+const driver = require('./routes/driver');
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND = path.join(__dirname, 'frontend');
@@ -133,6 +135,61 @@ const server = http.createServer(async (req, res) => {
     const pathname = url.pathname;
 
     try {
+        if (req.method === 'POST' && pathname === '/api/auth/login') {
+            const body = await readBody(req);
+            const result = await auth.login(body, req);
+
+            return sendJson(
+                res,
+                200,
+                { role: result.role, user: result.user },
+                { 'Set-Cookie': result.cookies }
+            );
+        }
+
+        if (req.method === 'GET' && pathname === '/api/auth/session') {
+            const currentSession = await auth.getSession(req);
+            return sendJson(res, 200, {
+                authenticated: Boolean(currentSession),
+                role: currentSession ? currentSession.role : null,
+                user: currentSession ? currentSession.user : null
+            });
+        }
+
+        if (req.method === 'POST' && pathname === '/api/auth/logout') {
+            return sendJson(
+                res,
+                200,
+                { message: 'Signed out successfully' },
+                { 'Set-Cookie': auth.logout(req) }
+            );
+        }
+
+        if (pathname.startsWith('/api/admin/')) {
+            const currentUser = await auth.getRoleSession(req);
+
+            if (!currentUser) {
+                return sendJson(res, 401, { error: 'Please sign in as an administrator' });
+            }
+
+            if (!['ADMIN', 'SUPER ADMIN'].includes(currentUser.role)) {
+                return sendJson(res, 403, { error: 'Administrator access is required' });
+            }
+        }
+
+        if (pathname.startsWith('/admin/')) {
+            const currentSession = await auth.getSession(req);
+
+            if (!currentSession || !['ADMIN', 'SUPER ADMIN'].includes(currentSession.role)) {
+                const destination = currentSession
+                    ? currentSession.role === 'DRIVER'
+                        ? '/driver-view/index.html'
+                        : '/passenger/passenger-dashboard.html'
+                    : '/auth.html?role=ADMIN';
+                res.writeHead(302, { Location: destination, 'Cache-Control': 'no-store' });
+                return res.end();
+            }
+        }
 
         // ==========================================
         // PASSENGER ACCOUNT ENDPOINTS
@@ -149,7 +206,7 @@ const server = http.createServer(async (req, res) => {
                 res,
                 201,
                 { passenger: result.passenger },
-                { 'Set-Cookie': result.cookie }
+                { 'Set-Cookie': [result.cookie, auth.clearRoleSessionCookie()] }
             );
         }
 
@@ -167,7 +224,7 @@ const server = http.createServer(async (req, res) => {
                 res,
                 200,
                 { passenger: result.passenger },
-                { 'Set-Cookie': result.cookie }
+                { 'Set-Cookie': [result.cookie, auth.clearRoleSessionCookie()] }
             );
         }
 
@@ -264,6 +321,22 @@ const server = http.createServer(async (req, res) => {
                 );
             }
 
+            if (
+                req.method === 'PUT' &&
+                pathname === '/api/passenger/profile'
+            ) {
+                const body = await readBody(req);
+                return sendJson(
+                    res,
+                    200,
+                    await passenger.updateProfile(
+                        currentPassenger.passenger_id,
+                        currentPassenger.user_id,
+                        body
+                    )
+                );
+            }
+
             let passengerMatch = pathname.match(
                 /^\/api\/passenger\/bookings\/(\d+)$/
             );
@@ -303,6 +376,72 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+
+        // ==========================================
+        // DRIVER ENDPOINTS
+        // ==========================================
+
+        if (pathname.startsWith('/api/driver/')) {
+            const currentUser = await auth.getRoleSession(req);
+
+            if (!currentUser || currentUser.role !== 'DRIVER') {
+                return sendJson(res, 401, {
+                    error: 'Please sign in as a driver'
+                });
+            }
+
+            const driverId = await driver.requireDriverId(currentUser);
+
+            if (req.method === 'GET' && pathname === '/api/driver/dashboard') {
+                return sendJson(res, 200, await driver.getDashboard(driverId));
+            }
+
+            if (req.method === 'GET' && pathname === '/api/driver/requests') {
+                return sendJson(res, 200, await driver.listIncomingRequests(driverId));
+            }
+
+            if (req.method === 'GET' && pathname === '/api/driver/trips') {
+                return sendJson(res, 200, await driver.listMyTrips(driverId));
+            }
+
+            if (req.method === 'PUT' && pathname === '/api/driver/availability') {
+                const body = await readBody(req);
+                return sendJson(
+                    res,
+                    200,
+                    await driver.setAvailability(driverId, Boolean(body.online))
+                );
+            }
+
+            let driverMatch = pathname.match(/^\/api\/driver\/trips\/(\d+)\/accept$/);
+            if (driverMatch && req.method === 'PUT') {
+                return sendJson(
+                    res,
+                    200,
+                    await driver.acceptTrip(driverId, Number(driverMatch[1]))
+                );
+            }
+
+            driverMatch = pathname.match(/^\/api\/driver\/trips\/(\d+)\/reject$/);
+            if (driverMatch && req.method === 'PUT') {
+                return sendJson(
+                    res,
+                    200,
+                    await driver.rejectTrip(driverId, Number(driverMatch[1]))
+                );
+            }
+
+            driverMatch = pathname.match(/^\/api\/driver\/trips\/(\d+)\/complete$/);
+            if (driverMatch && req.method === 'PUT') {
+                return sendJson(
+                    res,
+                    200,
+                    await driver.completeTrip(driverId, Number(driverMatch[1]))
+                );
+            }
+
+            return sendJson(res, 404, { error: 'Driver API endpoint not found' });
+        }
 
         // ==========================================
         // DASHBOARD ENDPOINTS

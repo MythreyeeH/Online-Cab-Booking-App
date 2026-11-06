@@ -1,26 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Driver Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/driver-view/style.css">
 </head>
 <body>
   <header>
     <h1>CabConnect</h1>
     <span>Driver Portal</span>
+    <button id="signOutBtn" type="button">Sign out</button>
   </header>
 
   <main>
     <section class="welcome">
       <div>
-        <h2>Welcome, Driver!</h2>
+        <h2>Welcome, <span data-driver-name>Driver</span>!</h2>
         <p>Manage your rides in one place.</p>
       </div>
 
-      <button id="availabilityBtn">Go Offline</button>
+      <button id="availabilityBtn" type="button">Go Offline</button>
     </section>
 
     <section class="stats">
@@ -48,6 +48,6 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script src="/driver-view/script.js"></script>
 </body>
 </html>
