@@ -260,6 +260,19 @@ async function createBooking(passengerId, data) {
     const destination = required(data.destination, 'Destination');
     const vehicleId = Number(data.vehicle_id);
 
+    let scheduledFor = null;
+    if (data.scheduled_for && String(data.scheduled_for).trim() !== '') {
+        const scheduledDate = new Date(data.scheduled_for);
+        if (Number.isNaN(scheduledDate.getTime())) {
+            throw new Error('Please enter a valid schedule date and time');
+        }
+        if (scheduledDate.getTime() < Date.now() + 5 * 60 * 1000) {
+            throw new Error('Scheduled time must be at least 5 minutes in the future');
+        }
+        const pad = n => String(n).padStart(2, '0');
+        scheduledFor = `${scheduledDate.getFullYear()}-${pad(scheduledDate.getMonth() + 1)}-${pad(scheduledDate.getDate())} ${pad(scheduledDate.getHours())}:${pad(scheduledDate.getMinutes())}:${pad(scheduledDate.getSeconds())}`;
+    }
+
     if (pickupLocation.length > 255 || destination.length > 255) {
         throw new Error('Pickup and destination must be 255 characters or fewer');
     }
@@ -360,12 +373,13 @@ async function createBooking(passengerId, data) {
 
         const [requestResult] = await connection.query(`
             INSERT INTO ride_requests
-                (passenger_id, pickup_location, destination, estimated_fare, status)
-            VALUES (?, ?, ?, ?, 'ACCEPTED')
+                (passenger_id, pickup_location, destination, requested_at, scheduled_for, estimated_fare, status)
+            VALUES (?, ?, ?, NOW(), ?, ?, 'ACCEPTED')
         `, [
             passengerId,
             pickup.display_name,
             destinationResult.display_name,
+            scheduledFor,
             fare
         ]);
 
@@ -405,8 +419,9 @@ async function createBooking(passengerId, data) {
             driver_name: vehicle.driver_name,
             distance_km: roundedDistanceKm,
             fare,
+            scheduled_for: scheduledFor,
             status: 'ASSIGNED',
-            message: 'Cab booked successfully'
+            message: scheduledFor ? 'Cab scheduled successfully' : 'Cab booked successfully'
         };
     } catch (error) {
         await connection.rollback();
@@ -424,6 +439,7 @@ async function listActiveTrips(passengerId) {
             rr.pickup_location,
             rr.destination,
             rr.requested_at,
+            rr.scheduled_for,
             t.trip_status AS status,
             t.distance_km,
             COALESCE(t.fare, rr.estimated_fare) AS fare,
@@ -523,6 +539,7 @@ async function listTripHistory(passengerId, userId) {
             rr.pickup_location,
             rr.destination,
             rr.requested_at,
+            rr.scheduled_for,
             t.start_time,
             t.end_time,
             t.distance_km,

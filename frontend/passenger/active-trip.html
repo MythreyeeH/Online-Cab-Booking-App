@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="/passenger/book-ride.css">
     <link rel="stylesheet" href="/passenger/passenger-pages.css">
 </head>
+
 <body class="auth-pending" data-page="active-trip">
     <header class="page-header">
         <a class="brand" href="/passenger/passenger-dashboard.html">
@@ -36,7 +38,11 @@
 
         <section class="panel">
             <div class="panel-heading">
-                <div><h2>Your current bookings</h2><p>Only bookings attached to your passenger account are shown.</p></div>
+                <div>
+                    <h2>Your current bookings</h2>
+                    <p>Only bookings attached to your passenger account are shown.</p>
+                    <p class="auto-refresh-status" id="autoRefreshStatus">Auto-refreshing every 20 seconds</p>
+                </div>
                 <button class="header-button" id="refreshTripsButton" type="button">Refresh</button>
             </div>
             <div class="trip-list" id="activeTrips">
@@ -50,4 +56,5 @@
     <script src="/passenger/passenger-common.js"></script>
     <script src="/passenger/passenger-pages.js"></script>
 </body>
+
 </html>

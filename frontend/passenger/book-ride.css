@@ -197,6 +197,10 @@ body {
     line-height: 1.5;
 }
 
+.schedule-field {
+    grid-column: 1 / -1;
+}
+
 .map-picker {
     grid-column: 1 / -1;
 }
@@ -263,6 +267,51 @@ body {
 .primary-button:disabled {
     cursor: wait;
     opacity: .65;
+}
+
+/* Anchor/link variants of the main action buttons */
+
+.primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--green);
+    color: #fff;
+    font: 600 12px 'DM Sans', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.primary-link:hover {
+    background: #126744;
+    color: #fff;
+}
+
+.secondary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #c8d4de;
+    border-radius: 8px;
+    background: #fff;
+    color: #536174;
+    font: 600 11px 'DM Sans', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+
+.secondary-link:hover {
+    border-color: #a0aebb;
+    background: #f4f7fa;
+    color: #354254;
 }
 
 .fare-note {

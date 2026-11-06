@@ -25,6 +25,14 @@
             <p class="subheading">Enter your pickup and destination to compare available cabs and estimated fares.</p>
         </div>
 
+        <nav class="passenger-nav" aria-label="Passenger pages">
+            <a href="/passenger/passenger-dashboard.html">Dashboard</a>
+            <a href="/passenger/book-ride.html" aria-current="page">Book a ride</a>
+            <a href="/passenger/active-trip.html">Active trip</a>
+            <a href="/passenger/trip-history.html">Trip history</a>
+            <a href="/passenger/profile.html">My profile</a>
+        </nav>
+
         <section class="panel" aria-labelledby="route-heading">
             <div class="panel-heading">
                 <div>
@@ -56,6 +64,16 @@
                         placeholder="e.g. Chennai Central"
                         required
                     >
+                </div>
+
+                <div class="form-field schedule-field">
+                    <label for="scheduledFor">Schedule for a specific date and time (optional)</label>
+                    <input
+                        id="scheduledFor"
+                        name="scheduled_for"
+                        type="datetime-local"
+                    >
+                    <small>Leave empty to book immediately, or pick a future time to pre-schedule your cab.</small>
                 </div>
 
                 <div class="map-picker">

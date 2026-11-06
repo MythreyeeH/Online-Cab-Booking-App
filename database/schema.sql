@@ -80,6 +80,7 @@ CREATE TABLE ride_requests (
     pickup_location VARCHAR(255) NOT NULL,
     destination VARCHAR(255) NOT NULL,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    scheduled_for DATETIME NULL DEFAULT NULL,
     estimated_fare DECIMAL(10,2) NOT NULL,
     status ENUM(
         'PENDING', 'ACCEPTED', 'REJECTED',
